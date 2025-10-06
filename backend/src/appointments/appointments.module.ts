@@ -9,6 +9,7 @@ import { AppointmentWaitlist } from './entities/appointment-waitlist.entity';
 import { AppointmentConflict } from './entities/appointment-conflict.entity';
 import { Patient } from '../patients/entities/patient.entity';
 import { User } from '../auth/entities/user.entity';
+import { PHIEncryptionService } from '../common/services/phi-encryption.service';
 
 @Module({
   imports: [
@@ -22,7 +23,7 @@ import { User } from '../auth/entities/user.entity';
     ]),
   ],
   controllers: [AppointmentsController],
-  providers: [AppointmentsService, AdvancedAppointmentsService],
+  providers: [AppointmentsService, AdvancedAppointmentsService, PHIEncryptionService],
   exports: [AppointmentsService, AdvancedAppointmentsService],
 })
 export class AppointmentsModule {}

@@ -151,74 +151,92 @@ export class InventoryService {
     clinicId: string,
     user: User,
   ): Promise<InventoryTransaction> {
-    // Find inventory for this product in this clinic
-    const inventory = await this.inventoryRepository.findOne({
-      where: {
+    // Use transaction to ensure data consistency
+    const queryRunner = this.inventoryRepository.manager.connection.createQueryRunner();
+    await queryRunner.connect();
+    await queryRunner.startTransaction();
+
+    try {
+      // Find inventory for this product in this clinic
+      const inventory = await queryRunner.manager.findOne(Inventory, {
+        where: {
+          tenant_id: tenantId,
+          clinic_id: clinicId,
+          product_id: transactionDto.productId,
+        },
+      });
+
+      if (!inventory) {
+        throw new NotFoundException('Inventory not found for this product in this clinic');
+      }
+
+      // Calculate new stock level
+      const newStock = inventory.current_stock + transactionDto.quantity;
+      
+      if (newStock < 0) {
+        throw new BadRequestException('Insufficient stock for this transaction');
+      }
+
+      // Update inventory
+      inventory.current_stock = newStock;
+      
+      // Update cost if provided
+      if (transactionDto.unitCost) {
+        inventory.last_cost = transactionDto.unitCost;
+        
+        // Calculate new average cost
+        if (transactionDto.quantity > 0) {
+          const totalValue = (inventory.average_cost || 0) * inventory.current_stock + 
+                            transactionDto.unitCost * transactionDto.quantity;
+          inventory.average_cost = totalValue / newStock;
+        }
+      }
+
+      // Update status based on stock level
+      if (newStock <= inventory.minimum_stock) {
+        inventory.status = InventoryStatus.LOW_STOCK;
+      } else if (newStock <= 0) {
+        inventory.status = InventoryStatus.OUT_OF_STOCK;
+      } else {
+        inventory.status = InventoryStatus.ACTIVE;
+      }
+
+      // Check for expired items
+      if (inventory.expiry_date && inventory.expiry_date < new Date()) {
+        inventory.status = InventoryStatus.EXPIRED;
+      }
+
+      await queryRunner.manager.save(inventory);
+
+      // Create transaction record
+      const transaction = queryRunner.manager.create(InventoryTransaction, {
         tenant_id: tenantId,
         clinic_id: clinicId,
         product_id: transactionDto.productId,
-      },
-    });
+        inventory_id: inventory.id,
+        transaction_type: transactionDto.transactionType,
+        quantity: transactionDto.quantity,
+        unit_cost: transactionDto.unitCost,
+        total_cost: transactionDto.unitCost ? transactionDto.unitCost * Math.abs(transactionDto.quantity) : null,
+        reference_type: transactionDto.referenceType,
+        reference_id: transactionDto.referenceId,
+        notes: transactionDto.notes,
+        created_by: user.id,
+      });
 
-    if (!inventory) {
-      throw new NotFoundException('Inventory not found for this product in this clinic');
+      const savedTransaction = await queryRunner.manager.save(transaction);
+
+      // Commit transaction
+      await queryRunner.commitTransaction();
+      return savedTransaction;
+    } catch (error) {
+      // Rollback transaction on error
+      await queryRunner.rollbackTransaction();
+      throw error;
+    } finally {
+      // Release query runner
+      await queryRunner.release();
     }
-
-    // Calculate new stock level
-    const newStock = inventory.current_stock + transactionDto.quantity;
-    
-    if (newStock < 0) {
-      throw new BadRequestException('Insufficient stock for this transaction');
-    }
-
-    // Update inventory
-    inventory.current_stock = newStock;
-    
-    // Update cost if provided
-    if (transactionDto.unitCost) {
-      inventory.last_cost = transactionDto.unitCost;
-      
-      // Calculate new average cost
-      if (transactionDto.quantity > 0) {
-        const totalValue = (inventory.average_cost || 0) * inventory.current_stock + 
-                          transactionDto.unitCost * transactionDto.quantity;
-        inventory.average_cost = totalValue / newStock;
-      }
-    }
-
-    // Update status based on stock level
-    if (newStock <= inventory.minimum_stock) {
-      inventory.status = InventoryStatus.LOW_STOCK;
-    } else if (newStock <= 0) {
-      inventory.status = InventoryStatus.OUT_OF_STOCK;
-    } else {
-      inventory.status = InventoryStatus.ACTIVE;
-    }
-
-    // Check for expired items
-    if (inventory.expiry_date && inventory.expiry_date < new Date()) {
-      inventory.status = InventoryStatus.EXPIRED;
-    }
-
-    await this.inventoryRepository.save(inventory);
-
-    // Create transaction record
-    const transaction = this.transactionRepository.create({
-      tenant_id: tenantId,
-      clinic_id: clinicId,
-      product_id: transactionDto.productId,
-      inventory_id: inventory.id,
-      transaction_type: transactionDto.transactionType,
-      quantity: transactionDto.quantity,
-      unit_cost: transactionDto.unitCost,
-      total_cost: transactionDto.unitCost ? transactionDto.unitCost * transactionDto.quantity : null,
-      reference_type: transactionDto.referenceType,
-      reference_id: transactionDto.referenceId,
-      notes: transactionDto.notes,
-      created_by: user.id,
-    });
-
-    return await this.transactionRepository.save(transaction);
   }
 
   async getLowStockItems(tenantId: string, clinicId?: string): Promise<Inventory[]> {

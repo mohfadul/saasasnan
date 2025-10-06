@@ -85,13 +85,13 @@ export class AnalyticsReport extends BaseEntity {
   })
   frequency: ReportFrequency;
 
-  @Column({ type: 'jsonb' })
+  @Column({ type: 'json' })
   report_config: Record<string, any>;
 
-  @Column({ type: 'jsonb' })
+  @Column({ type: 'json' })
   filters: Record<string, any>;
 
-  @Column({ type: 'jsonb', nullable: true })
+  @Column({ type: 'json', nullable: true })
   schedule_config?: Record<string, any>;
 
   @Column({ type: 'date', nullable: true })
@@ -124,13 +124,13 @@ export class AnalyticsReport extends BaseEntity {
   @Column({ type: 'timestamp', nullable: true })
   expires_at?: Date;
 
-  @Column({ type: 'jsonb', nullable: true })
+  @Column({ type: 'json', nullable: true })
   metadata?: Record<string, any>;
 
   @Column({ type: 'text', nullable: true })
   error_message?: string;
 
-  @Column({ type: 'jsonb', nullable: true })
+  @Column({ type: 'json', nullable: true })
   recipient_list?: Record<string, any>;
 
   @Column({ type: 'boolean', default: false })

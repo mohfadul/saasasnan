@@ -72,10 +72,10 @@ export class Alert extends BaseEntity {
   @Column({ type: 'integer', default: 0 }) // 0 means no cooldown
   cooldown_seconds: number;
 
-  @Column({ type: 'jsonb', nullable: true })
+  @Column({ type: 'json', nullable: true })
   labels_filter?: Record<string, string>;
 
-  @Column({ type: 'jsonb' })
+  @Column({ type: 'json' })
   notification_channels: Record<string, any>;
 
   @Column({ type: 'text', nullable: true })
@@ -93,7 +93,7 @@ export class Alert extends BaseEntity {
   @Column({ type: 'integer', default: 0 })
   trigger_count: number;
 
-  @Column({ type: 'jsonb', nullable: true })
+  @Column({ type: 'json', nullable: true })
   metadata?: Record<string, any>;
 
   @ManyToOne(() => Tenant)

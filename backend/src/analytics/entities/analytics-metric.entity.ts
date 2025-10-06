@@ -56,7 +56,7 @@ export class AnalyticsMetric extends BaseEntity {
   @Column({ type: 'varchar', length: 255 })
   metric_description: string;
 
-  @Column({ type: 'jsonb' })
+  @Column({ type: 'json' })
   metric_data: Record<string, any>;
 
   @Column({ type: 'decimal', precision: 15, scale: 4, nullable: true })
@@ -78,10 +78,10 @@ export class AnalyticsMetric extends BaseEntity {
   })
   status: MetricStatus;
 
-  @Column({ type: 'jsonb', nullable: true })
+  @Column({ type: 'json', nullable: true })
   metadata?: Record<string, any>;
 
-  @Column({ type: 'jsonb', nullable: true })
+  @Column({ type: 'json', nullable: true })
   comparison_data?: Record<string, any>;
 
   @Column({ type: 'decimal', precision: 5, scale: 2, nullable: true })
@@ -90,7 +90,7 @@ export class AnalyticsMetric extends BaseEntity {
   @Column({ type: 'decimal', precision: 5, scale: 2, nullable: true })
   trend_direction?: number; // -1 (down), 0 (stable), 1 (up)
 
-  @Column({ type: 'jsonb', nullable: true })
+  @Column({ type: 'json', nullable: true })
   breakdown_data?: Record<string, any>;
 
   @ManyToOne(() => Tenant)

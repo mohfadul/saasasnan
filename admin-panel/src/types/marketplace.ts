@@ -1,5 +1,20 @@
 // Marketplace Types
 
+export enum ProductCategory {
+  DENTAL_EQUIPMENT = 'dental_equipment',
+  INSTRUMENTS = 'instruments',
+  CONSUMABLES = 'consumables',
+  MEDICATIONS = 'medications',
+  STERILIZATION = 'sterilization',
+  PPE = 'ppe',
+  OFFICE_SUPPLIES = 'office_supplies',
+  IMAGING = 'imaging',
+  LABORATORY = 'laboratory',
+  ORTHODONTICS = 'orthodontics',
+  PERIODONTICS = 'periodontics',
+  ENDODONTICS = 'endodontics',
+}
+
 export interface Supplier {
   id: string;
   tenantId: string;
@@ -26,7 +41,7 @@ export interface Supplier {
   updatedAt: string;
 }
 
-export interface ProductCategory {
+export interface ProductCategoryEntity {
   id: string;
   tenantId: string;
   name: string;
@@ -42,26 +57,34 @@ export interface Product {
   tenantId: string;
   supplierId: string;
   categoryId?: string;
+  category?: ProductCategoryEntity | ProductCategory | string;
   name: string;
   description?: string;
   sku: string;
+  manufacturer?: string;
   barcode?: string;
   brand?: string;
   model?: string;
+  unitOfMeasure?: string;
   costPrice: number;
+  unitPrice?: number;
+  wholesalePrice?: number;
   sellingPrice: number;
+  retailPrice?: number;
   minimumPrice?: number;
   attributes: Record<string, any>;
   specifications: Record<string, any>;
   images: string[];
+  imageUrl?: string;
   status: 'active' | 'inactive' | 'discontinued';
+  isActive?: boolean;
   isFeatured: boolean;
+  requiresPrescription?: boolean;
   tags: string[];
   metaTitle?: string;
   metaDescription?: string;
   searchKeywords: string[];
   supplier?: Supplier;
-  category?: ProductCategory;
   createdAt: string;
   updatedAt: string;
 }

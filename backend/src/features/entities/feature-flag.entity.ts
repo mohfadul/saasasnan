@@ -62,16 +62,16 @@ export class FeatureFlag extends BaseEntity {
   })
   rollout_strategy: FeatureFlagRolloutStrategy;
 
-  @Column({ type: 'jsonb' })
+  @Column({ type: 'json' })
   default_value: any;
 
-  @Column({ type: 'jsonb' })
+  @Column({ type: 'json' })
   rollout_config: Record<string, any>;
 
-  @Column({ type: 'jsonb', nullable: true })
+  @Column({ type: 'json', nullable: true })
   targeting_rules?: Record<string, any>;
 
-  @Column({ type: 'jsonb', nullable: true })
+  @Column({ type: 'json', nullable: true })
   variants?: Record<string, any>;
 
   @Column({ type: 'boolean', default: false })
@@ -80,7 +80,7 @@ export class FeatureFlag extends BaseEntity {
   @Column({ type: 'varchar', length: 255, nullable: true })
   experiment_id?: string;
 
-  @Column({ type: 'jsonb', nullable: true })
+  @Column({ type: 'json', nullable: true })
   experiment_config?: Record<string, any>;
 
   @Column({ type: 'timestamp', nullable: true })
@@ -95,7 +95,7 @@ export class FeatureFlag extends BaseEntity {
   @Column({ type: 'integer', default: 0 })
   positive_evaluations: number;
 
-  @Column({ type: 'jsonb', nullable: true })
+  @Column({ type: 'json', nullable: true })
   metrics?: Record<string, any>;
 
   @Column({ type: 'boolean', default: false })
@@ -107,7 +107,7 @@ export class FeatureFlag extends BaseEntity {
   @Column({ type: 'timestamp', nullable: true })
   approved_at?: Date;
 
-  @Column({ type: 'jsonb', nullable: true })
+  @Column({ type: 'json', nullable: true })
   metadata?: Record<string, any>;
 
   @ManyToOne(() => Tenant)

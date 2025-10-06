@@ -1,12 +1,19 @@
 import React from 'react';
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
+import '@testing-library/jest-dom';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { PatientTable } from '../../components/patients/PatientTable';
-import * as api from '../../services/api';
+import { patientsApi } from '../../services/api';
 
 // Mock the API module
-jest.mock('../../services/api');
-const mockedApi = api as jest.Mocked<typeof api>;
+jest.mock('../../services/api', () => ({
+  patientsApi: {
+    getPatients: jest.fn(),
+    createPatient: jest.fn(),
+    updatePatient: jest.fn(),
+    deletePatient: jest.fn(),
+  },
+}));
 
 // Mock data
 const mockPatients = [
@@ -73,7 +80,7 @@ describe('PatientTable', () => {
   });
 
   it('renders patient table with data', async () => {
-    mockedApi.getPatients.mockResolvedValue({
+    (patientsApi.getPatients as jest.Mock).mockResolvedValue({
       patients: mockPatients,
       total: 2,
       limit: 10,
@@ -100,7 +107,7 @@ describe('PatientTable', () => {
   });
 
   it('displays loading state', () => {
-    mockedApi.getPatients.mockImplementation(() => new Promise(() => {}));
+    (patientsApi.getPatients as jest.Mock).mockImplementation(() => new Promise(() => {}));
 
     render(
       <TestWrapper>
@@ -112,7 +119,7 @@ describe('PatientTable', () => {
   });
 
   it('displays error state', async () => {
-    mockedApi.getPatients.mockRejectedValue(new Error('Failed to fetch patients'));
+    (patientsApi.getPatients as jest.Mock).mockRejectedValue(new Error('Failed to fetch patients'));
 
     render(
       <TestWrapper>
@@ -126,7 +133,7 @@ describe('PatientTable', () => {
   });
 
   it('handles search functionality', async () => {
-    mockedApi.getPatients.mockResolvedValue({
+    (patientsApi.getPatients as jest.Mock).mockResolvedValue({
       patients: mockPatients,
       total: 2,
       limit: 10,
@@ -151,7 +158,7 @@ describe('PatientTable', () => {
     fireEvent.click(screen.getByText('Search'));
 
     await waitFor(() => {
-      expect(mockedApi.getPatients).toHaveBeenCalledWith({
+      expect(patientsApi.getPatients).toHaveBeenCalledWith({
         search: 'John',
         limit: 10,
         offset: 0,
@@ -160,7 +167,7 @@ describe('PatientTable', () => {
   });
 
   it('handles pagination', async () => {
-    mockedApi.getPatients.mockResolvedValue({
+    (patientsApi.getPatients as jest.Mock).mockResolvedValue({
       patients: mockPatients,
       total: 25,
       limit: 10,
@@ -181,7 +188,7 @@ describe('PatientTable', () => {
     fireEvent.click(screen.getByText('Next'));
 
     await waitFor(() => {
-      expect(mockedApi.getPatients).toHaveBeenCalledWith({
+      expect(patientsApi.getPatients).toHaveBeenCalledWith({
         limit: 10,
         offset: 10,
       });
@@ -189,14 +196,14 @@ describe('PatientTable', () => {
   });
 
   it('handles patient creation', async () => {
-    mockedApi.getPatients.mockResolvedValue({
+    (patientsApi.getPatients as jest.Mock).mockResolvedValue({
       patients: mockPatients,
       total: 2,
       limit: 10,
       offset: 0,
     });
 
-    mockedApi.createPatient.mockResolvedValue({
+    (patientsApi.createPatient as jest.Mock).mockResolvedValue({
       id: '3',
       tenant_id: 'tenant-1',
       clinic_id: 'clinic-1',
@@ -232,34 +239,34 @@ describe('PatientTable', () => {
     // Fill out the form (this would be in a modal or separate component)
     // For this test, we'll simulate the form submission
     const newPatientData = {
-      clinic_id: 'clinic-1',
-      patient_external_id: 'EXT-003',
+      clinicId: 'clinic-1',
+      patientExternalId: 'EXT-003',
       demographics: {
-        first_name: 'New',
-        last_name: 'Patient',
-        date_of_birth: '1995-01-01',
-        phone_number: '+1234567892',
+        firstName: 'New',
+        lastName: 'Patient',
+        dateOfBirth: '1995-01-01',
+        phone: '+1234567892',
         email: 'new.patient@example.com',
       },
       tags: [],
-      consent_flags: {},
-      medical_alert_flags: {},
+      consentFlags: {},
+      medicalAlertFlags: {},
     };
 
-    await mockedApi.createPatient(newPatientData);
+    await patientsApi.createPatient(newPatientData);
 
-    expect(mockedApi.createPatient).toHaveBeenCalledWith(newPatientData);
+    expect(patientsApi.createPatient).toHaveBeenCalledWith(newPatientData);
   });
 
   it('handles patient deletion', async () => {
-    mockedApi.getPatients.mockResolvedValue({
+    (patientsApi.getPatients as jest.Mock).mockResolvedValue({
       patients: mockPatients,
       total: 2,
       limit: 10,
       offset: 0,
     });
 
-    mockedApi.deletePatient.mockResolvedValue(undefined);
+    (patientsApi.deletePatient as jest.Mock).mockResolvedValue(undefined);
 
     render(
       <TestWrapper>
@@ -279,19 +286,19 @@ describe('PatientTable', () => {
     fireEvent.click(screen.getByText('Confirm'));
 
     await waitFor(() => {
-      expect(mockedApi.deletePatient).toHaveBeenCalledWith('1');
+      expect(patientsApi.deletePatient).toHaveBeenCalledWith('1');
     });
   });
 
   it('handles patient editing', async () => {
-    mockedApi.getPatients.mockResolvedValue({
+    (patientsApi.getPatients as jest.Mock).mockResolvedValue({
       patients: mockPatients,
       total: 2,
       limit: 10,
       offset: 0,
     });
 
-    mockedApi.updatePatient.mockResolvedValue({
+    (patientsApi.updatePatient as jest.Mock).mockResolvedValue({
       ...mockPatients[0],
       demographics: {
         ...mockPatients[0].demographics,
@@ -316,18 +323,21 @@ describe('PatientTable', () => {
     // Update patient data (this would be in a modal or separate component)
     const updatedPatientData = {
       demographics: {
-        ...mockPatients[0].demographics,
-        first_name: 'Johnny',
+        firstName: 'Johnny',
+        lastName: mockPatients[0].demographics.last_name,
+        dateOfBirth: mockPatients[0].demographics.date_of_birth,
+        phone: mockPatients[0].demographics.phone_number,
+        email: mockPatients[0].demographics.email,
       },
     };
 
-    await mockedApi.updatePatient('1', updatedPatientData);
+    await patientsApi.updatePatient('1', updatedPatientData);
 
-    expect(mockedApi.updatePatient).toHaveBeenCalledWith('1', updatedPatientData);
+    expect(patientsApi.updatePatient).toHaveBeenCalledWith('1', updatedPatientData);
   });
 
   it('filters patients by tags', async () => {
-    mockedApi.getPatients.mockResolvedValue({
+    (patientsApi.getPatients as jest.Mock).mockResolvedValue({
       patients: [mockPatients[0]], // Only VIP patient
       total: 1,
       limit: 10,
@@ -351,7 +361,7 @@ describe('PatientTable', () => {
     fireEvent.click(screen.getByText('Apply Filters'));
 
     await waitFor(() => {
-      expect(mockedApi.getPatients).toHaveBeenCalledWith({
+      expect(patientsApi.getPatients).toHaveBeenCalledWith({
         tags: 'vip',
         limit: 10,
         offset: 0,
@@ -360,7 +370,7 @@ describe('PatientTable', () => {
   });
 
   it('displays patient tags correctly', async () => {
-    mockedApi.getPatients.mockResolvedValue({
+    (patientsApi.getPatients as jest.Mock).mockResolvedValue({
       patients: mockPatients,
       total: 2,
       limit: 10,
@@ -383,7 +393,7 @@ describe('PatientTable', () => {
   });
 
   it('handles empty state', async () => {
-    mockedApi.getPatients.mockResolvedValue({
+    (patientsApi.getPatients as jest.Mock).mockResolvedValue({
       patients: [],
       total: 0,
       limit: 10,

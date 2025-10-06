@@ -10,10 +10,10 @@ export class InsuranceProvider extends BaseEntity {
   @Column({ length: 255 })
   name: string;
 
-  @Column('jsonb')
+  @Column('json')
   contact_info: Record<string, any>;
 
-  @Column('jsonb', { default: {} })
+  @Column('json', { default: {} })
   coverage_details: Record<string, any>;
 
   @Column({ type: 'decimal', precision: 5, scale: 2, default: 0 })

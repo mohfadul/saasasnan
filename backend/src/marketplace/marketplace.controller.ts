@@ -17,10 +17,11 @@ import { SuppliersService, CreateSupplierDto, UpdateSupplierDto } from './suppli
 import { ProductsService, CreateProductDto, UpdateProductDto, ProductFilters } from './products.service';
 import { OrdersService } from './orders.service';
 import { User } from '../auth/entities/user.entity';
+import { TenantGuard } from '../tenants/tenant.guard';
 
 @ApiTags('Marketplace')
 @Controller('marketplace')
-@UseGuards(AuthGuard('jwt'))
+@UseGuards(AuthGuard('jwt'), TenantGuard)
 @ApiBearerAuth()
 export class MarketplaceController {
   constructor(

@@ -67,16 +67,16 @@ export class AlertIncident extends BaseEntity {
   @Column({ type: 'decimal', precision: 20, scale: 6 })
   threshold_value: number;
 
-  @Column({ type: 'jsonb', nullable: true })
+  @Column({ type: 'json', nullable: true })
   context_data?: Record<string, any>;
 
   @Column({ type: 'text', nullable: true })
   resolution_notes?: string;
 
-  @Column({ type: 'jsonb', nullable: true })
+  @Column({ type: 'json', nullable: true })
   notification_log?: Record<string, any>;
 
-  @Column({ type: 'jsonb', nullable: true })
+  @Column({ type: 'json', nullable: true })
   metadata?: Record<string, any>;
 
   @ManyToOne(() => Alert)

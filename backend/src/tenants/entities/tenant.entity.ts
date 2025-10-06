@@ -11,7 +11,7 @@ export class Tenant extends BaseEntity {
   @Column({ length: 100, unique: true })
   subdomain: string;
 
-  @Column('jsonb', { default: {} })
+  @Column({ type: 'json', default: '{}' })
   config: Record<string, any>;
 
   @Column({ 

@@ -46,7 +46,7 @@ export class Metric extends BaseEntity {
   @Column({ type: 'decimal', precision: 20, scale: 6 })
   value: number;
 
-  @Column({ type: 'jsonb', nullable: true })
+  @Column({ type: 'json', nullable: true })
   labels?: Record<string, string>;
 
   @Column({ type: 'timestamp' })
@@ -55,6 +55,6 @@ export class Metric extends BaseEntity {
   @Column({ type: 'varchar', length: 255, nullable: true })
   source?: string;
 
-  @Column({ type: 'jsonb', nullable: true })
+  @Column({ type: 'json', nullable: true })
   metadata?: Record<string, any>;
 }

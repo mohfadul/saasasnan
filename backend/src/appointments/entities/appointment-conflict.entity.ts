@@ -48,7 +48,7 @@ export class AppointmentConflict extends BaseEntity {
   @Column({ type: 'text' })
   description: string;
 
-  @Column({ type: 'jsonb', default: '{}' })
+  @Column({ type: 'json', default: '{}' })
   conflict_details: Record<string, any>; // Additional conflict information
 
   @Column({ type: 'text', nullable: true })
@@ -57,7 +57,7 @@ export class AppointmentConflict extends BaseEntity {
   @Column({ type: 'uuid', nullable: true })
   resolved_by?: string;
 
-  @Column({ type: 'timestamptz', nullable: true })
+  @Column({ type: 'timestamp', nullable: true })
   resolved_at?: Date;
 
   @Column({ type: 'integer', default: 1 })
@@ -66,7 +66,7 @@ export class AppointmentConflict extends BaseEntity {
   @Column({ type: 'boolean', default: false })
   auto_resolved: boolean;
 
-  @Column({ type: 'timestamptz', nullable: true })
+  @Column({ type: 'timestamp', nullable: true })
   detected_at: Date;
 
   @ManyToOne(() => Appointment, appointment => appointment.conflicts_as_primary)

@@ -10,14 +10,30 @@ export enum PaymentMethod {
   CHECK = 'check',
   INSURANCE = 'insurance',
   ONLINE = 'online',
+  MOBILE_WALLET = 'mobile_wallet',
 }
 
 export enum PaymentStatus {
   PENDING = 'pending',
+  PROCESSING = 'processing',
+  CONFIRMED = 'confirmed',
   COMPLETED = 'completed',
   FAILED = 'failed',
   REFUNDED = 'refunded',
+  REJECTED = 'rejected',
   CANCELLED = 'cancelled',
+}
+
+// Sudan-specific payment providers
+export enum PaymentProvider {
+  BANK_OF_KHARTOUM = 'BankOfKhartoum',
+  FAISAL_ISLAMIC_BANK = 'FaisalIslamicBank',
+  OMDURMAN_NATIONAL_BANK = 'OmdurmanNationalBank',
+  ZAIN_BEDE = 'ZainBede',
+  CASHI = 'Cashi',
+  CASH_ON_DELIVERY = 'CashOnDelivery',
+  CASH_AT_BRANCH = 'CashAtBranch',
+  OTHER = 'Other',
 }
 
 @Entity('payments')
@@ -48,7 +64,7 @@ export class Payment extends BaseEntity {
   @Column({ length: 255, nullable: true })
   transaction_id?: string; // External payment processor ID
 
-  @Column('jsonb', { nullable: true })
+  @Column('json', { nullable: true })
   gateway_response?: Record<string, any>; // Full response from payment gateway
 
   @Column({ type: 'decimal', precision: 10, scale: 2, default: 0 })
@@ -58,9 +74,39 @@ export class Payment extends BaseEntity {
   @Column({
     type: 'enum',
     enum: PaymentStatus,
-    default: PaymentStatus.COMPLETED,
+    default: PaymentStatus.PENDING,
   })
-  status: PaymentStatus;
+  payment_status: PaymentStatus;
+
+  // Sudan Payment System Fields
+  @Column({
+    type: 'enum',
+    enum: PaymentProvider,
+    nullable: true,
+  })
+  provider?: PaymentProvider;
+
+  @Column({ length: 100, nullable: true })
+  reference_id?: string; // Bank transfer ref, wallet transaction ID, or agent code
+
+  @Column({ length: 255, nullable: true })
+  payer_name?: string;
+
+  @Column({ length: 20, nullable: true })
+  wallet_phone?: string; // Sudan mobile wallet phone number
+
+  @Column({ length: 500, nullable: true })
+  receipt_url?: string; // URL to uploaded receipt/screenshot
+
+  // Manual Review Fields
+  @Column({ type: 'uuid', nullable: true })
+  reviewed_by?: string;
+
+  @Column({ type: 'timestamp', nullable: true })
+  reviewed_at?: Date;
+
+  @Column({ type: 'text', nullable: true })
+  admin_notes?: string; // Notes added by admin during review
 
   // Additional
   @Column({ type: 'text', nullable: true })
@@ -77,4 +123,8 @@ export class Payment extends BaseEntity {
   @ManyToOne(() => User)
   @JoinColumn({ name: 'created_by' })
   created_by_user?: User;
+
+  @ManyToOne(() => User)
+  @JoinColumn({ name: 'reviewed_by' })
+  reviewed_by_user?: User;
 }

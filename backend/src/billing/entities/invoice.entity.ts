@@ -20,10 +20,10 @@ export enum CustomerType {
 
 @Entity('invoices')
 export class Invoice extends BaseEntity {
-  @Column({ type: 'uuid' })
+  @Column({ type: 'varchar', length: 36 })
   tenant_id: string;
 
-  @Column({ type: 'uuid' })
+  @Column({ type: 'varchar', length: 36 })
   clinic_id: string;
 
   // Invoice details
@@ -43,10 +43,10 @@ export class Invoice extends BaseEntity {
   })
   customer_type: CustomerType;
 
-  @Column({ type: 'uuid', nullable: true })
+  @Column({ type: 'varchar', length: 36, nullable: true })
   customer_id?: string; // References patients(id) or insurance_providers(id)
 
-  @Column('jsonb')
+  @Column({ type: 'json' })
   customer_info: Record<string, any>; // Name, address, contact info
 
   // Financial
@@ -96,7 +96,7 @@ export class Invoice extends BaseEntity {
   terms_and_conditions?: string;
 
   // Audit
-  @Column({ type: 'uuid', nullable: true })
+  @Column({ type: 'varchar', length: 36, nullable: true })
   created_by?: string;
 
   @ManyToOne(() => User)

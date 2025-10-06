@@ -7,10 +7,15 @@ import ErrorBoundary from './components/ErrorBoundary';
 import { DashboardLayout } from './components/layout/DashboardLayout';
 import { LoginPage } from './pages/LoginPage';
 import { DashboardPage } from './pages/DashboardPage';
+import { AppointmentsPage } from './pages/AppointmentsPage';
 import { MarketplacePage } from './pages/MarketplacePage';
 import { BillingPage } from './pages/BillingPage';
-import { AnalyticsPage } from './pages/AnalyticsPage';
-import { AIPage } from './pages/AIPage';
+import { PendingPaymentsPage } from './pages/PendingPaymentsPage';
+import { ClinicalNotesPage } from './pages/ClinicalNotesPage';
+import { TreatmentPlansPage } from './pages/TreatmentPlansPage';
+import AnalyticsPage from './pages/AnalyticsPage';
+import AIPage from './pages/AIPage';
+import { SettingsPage } from './pages/SettingsPage';
 import { PatientTable } from './components/patients/PatientTable';
 
 // Create a client with optimized settings
@@ -20,7 +25,7 @@ const queryClient = new QueryClient({
       retry: 1,
       refetchOnWindowFocus: false,
       staleTime: 5 * 60 * 1000, // 5 minutes
-      cacheTime: 10 * 60 * 1000, // 10 minutes
+      gcTime: 10 * 60 * 1000, // 10 minutes (formerly cacheTime in v4)
       refetchOnMount: false,
       refetchOnReconnect: 'always',
     },
@@ -112,21 +117,29 @@ const AppRoutes: React.FC = () => {
         element={
           <ProtectedRoute>
             <DashboardLayout>
-              <div className="space-y-6">
-                <div className="md:flex md:items-center md:justify-between">
-                  <div className="flex-1 min-w-0">
-                    <h2 className="text-2xl font-bold leading-7 text-gray-900 sm:text-3xl sm:truncate">
-                      Appointments
-                    </h2>
-                    <p className="mt-1 text-sm text-gray-500">
-                      Manage appointments and scheduling
-                    </p>
-                  </div>
-                </div>
-                <div className="bg-white shadow rounded-lg p-6">
-                  <p className="text-gray-500">Appointment management coming soon...</p>
-                </div>
-              </div>
+              <AppointmentsPage />
+            </DashboardLayout>
+          </ProtectedRoute>
+        }
+      />
+
+      <Route
+        path="/clinical"
+        element={
+          <ProtectedRoute>
+            <DashboardLayout>
+              <ClinicalNotesPage />
+            </DashboardLayout>
+          </ProtectedRoute>
+        }
+      />
+
+      <Route
+        path="/treatment-plans"
+        element={
+          <ProtectedRoute>
+            <DashboardLayout>
+              <TreatmentPlansPage />
             </DashboardLayout>
           </ProtectedRoute>
         }
@@ -153,6 +166,16 @@ const AppRoutes: React.FC = () => {
                   </ProtectedRoute>
                 }
               />
+              <Route
+                path="/payments/pending"
+                element={
+                  <ProtectedRoute>
+                    <DashboardLayout>
+                      <PendingPaymentsPage />
+                    </DashboardLayout>
+                  </ProtectedRoute>
+                }
+              />
 
               <Route
                 path="/analytics"
@@ -171,6 +194,17 @@ const AppRoutes: React.FC = () => {
                   <ProtectedRoute>
                     <DashboardLayout>
                       <AIPage />
+                    </DashboardLayout>
+                  </ProtectedRoute>
+                }
+              />
+
+              <Route
+                path="/settings"
+                element={
+                  <ProtectedRoute>
+                    <DashboardLayout>
+                      <SettingsPage />
                     </DashboardLayout>
                   </ProtectedRoute>
                 }

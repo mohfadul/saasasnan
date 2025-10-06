@@ -1,4 +1,4 @@
-import { useState, useEffect, createContext, useContext, ReactNode } from 'react';
+import React, { useState, useEffect, createContext, useContext, ReactNode } from 'react';
 import { User, AuthResponse } from '../types';
 import { authApi } from '../services/api';
 
@@ -24,7 +24,7 @@ interface AuthProviderProps {
   children: ReactNode;
 }
 
-export const AuthProvider = ({ children }: AuthProviderProps) => {
+export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
 
@@ -77,9 +77,5 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
     isAuthenticated: !!user,
   };
 
-  return (
-    <AuthContext.Provider value={value}>
-      {children}
-    </AuthContext.Provider>
-  );
+  return React.createElement(AuthContext.Provider, { value }, children);
 };

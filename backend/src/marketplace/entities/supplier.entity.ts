@@ -11,10 +11,10 @@ export class Supplier extends BaseEntity {
   @Column({ length: 255 })
   name: string;
 
-  @Column('jsonb')
+  @Column('json')
   contact_info: Record<string, any>;
 
-  @Column('jsonb', { default: {} })
+  @Column('json', { default: {} })
   business_info: Record<string, any>;
 
   @Column({

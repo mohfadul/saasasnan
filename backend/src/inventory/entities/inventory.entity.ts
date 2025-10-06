@@ -11,13 +11,13 @@ export enum InventoryStatus {
 
 @Entity('inventory')
 export class Inventory extends BaseEntity {
-  @Column({ type: 'uuid' })
+  @Column({ type: 'varchar', length: 36 })
   tenant_id: string;
 
-  @Column({ type: 'uuid' })
+  @Column({ type: 'varchar', length: 36 })
   clinic_id: string;
 
-  @Column({ type: 'uuid' })
+  @Column({ type: 'varchar', length: 36 })
   product_id: string;
 
   // Stock levels

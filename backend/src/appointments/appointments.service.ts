@@ -4,6 +4,7 @@ import { Repository, Between } from 'typeorm';
 import { Appointment, AppointmentStatus } from './entities/appointment.entity';
 import { CreateAppointmentDto } from './dto/create-appointment.dto';
 import { User } from '../auth/entities/user.entity';
+import { PHIEncryptionService } from '../common/services/phi-encryption.service';
 
 export interface UpdateAppointmentDto {
   startTime?: string;
@@ -20,6 +21,7 @@ export class AppointmentsService {
   constructor(
     @InjectRepository(Appointment)
     private appointmentsRepository: Repository<Appointment>,
+    private phiEncryptionService: PHIEncryptionService,
   ) {}
 
   async create(createAppointmentDto: CreateAppointmentDto, tenantId: string, user: User): Promise<Appointment> {
@@ -77,9 +79,39 @@ export class AppointmentsService {
       });
     }
 
-    return await query
+    const appointments = await query
       .orderBy('appointment.start_time', 'ASC')
       .getMany();
+
+    // Decrypt patient demographics for each appointment
+    const decryptedAppointments = await Promise.all(
+      appointments.map(async (appointment) => {
+        if (appointment.patient && appointment.patient.encrypted_demographics) {
+          try {
+            const decryptedDemographics = await this.phiEncryptionService.decryptPatientDemographics({
+              encryptedData: appointment.patient.encrypted_demographics,
+              encryptionContext: {},
+              keyId: appointment.patient.demographics_key_id,
+              algorithm: 'aes-256-gcm',
+            });
+            
+            return {
+              ...appointment,
+              patient: {
+                ...appointment.patient,
+                demographics: decryptedDemographics,
+              },
+            };
+          } catch (error) {
+            console.error('Error decrypting patient demographics:', error);
+            return appointment;
+          }
+        }
+        return appointment;
+      })
+    );
+
+    return decryptedAppointments;
   }
 
   async findOne(id: string, tenantId: string): Promise<Appointment> {

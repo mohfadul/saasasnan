@@ -274,10 +274,10 @@ const InsightCard: React.FC<InsightCardProps> = ({
       )}
 
       {/* Review Notes */}
-      {insight.status === 'reviewed' && insight.review_notes && (
+      {insight.status === 'reviewed' && (insight as any).review_notes && (
         <div className="mt-4 p-3 bg-gray-50 rounded-lg">
           <h4 className="text-sm font-medium text-gray-700 mb-1">Review Notes</h4>
-          <p className="text-sm text-gray-600">{insight.review_notes}</p>
+          <p className="text-sm text-gray-600">{(insight as any).review_notes}</p>
         </div>
       )}
     </div>

@@ -87,29 +87,29 @@ export class ClinicalNote extends BaseEntity {
   additional_notes?: string;
 
   // Clinical data
-  @Column({ type: 'jsonb', default: '{}' })
+  @Column({ type: 'json', default: '{}' })
   vital_signs?: Record<string, any>; // Blood pressure, temperature, etc.
 
-  @Column({ type: 'jsonb', default: '[]' })
+  @Column({ type: 'json', default: '[]' })
   medications?: Record<string, any>[]; // Current medications
 
-  @Column({ type: 'jsonb', default: '[]' })
+  @Column({ type: 'json', default: '[]' })
   allergies?: string[]; // Known allergies
 
-  @Column({ type: 'jsonb', default: '[]' })
+  @Column({ type: 'json', default: '[]' })
   procedures_performed?: Record<string, any>[]; // Procedures done during visit
 
   // Digital signatures and amendments
   @Column({ type: 'text', nullable: true })
   provider_signature?: string;
 
-  @Column({ type: 'timestamptz', nullable: true })
+  @Column({ type: 'timestamp', nullable: true })
   signed_at?: Date;
 
   @Column({ type: 'uuid', nullable: true })
   amended_by?: string;
 
-  @Column({ type: 'timestamptz', nullable: true })
+  @Column({ type: 'timestamp', nullable: true })
   amended_at?: Date;
 
   @Column({ type: 'text', nullable: true })

@@ -32,49 +32,73 @@ export class PaymentsService {
   ) {}
 
   async create(createPaymentDto: CreatePaymentDto, tenantId: string, user: any): Promise<Payment> {
-    // Validate invoice if provided
-    if (createPaymentDto.invoiceId) {
-      const invoice = await this.invoicesRepository.findOne({
-        where: { id: createPaymentDto.invoiceId, tenant_id: tenantId },
+    // Use transaction to ensure payment and invoice update are atomic
+    const queryRunner = this.paymentsRepository.manager.connection.createQueryRunner();
+    await queryRunner.connect();
+    await queryRunner.startTransaction();
+
+    try {
+      // Validate invoice if provided
+      let invoice;
+      if (createPaymentDto.invoiceId) {
+        invoice = await queryRunner.manager.findOne(Invoice, {
+          where: { id: createPaymentDto.invoiceId, tenant_id: tenantId },
+        });
+
+        if (!invoice) {
+          throw new NotFoundException('Invoice not found');
+        }
+
+        // Check if payment amount exceeds remaining balance
+        if (createPaymentDto.amount > invoice.balance_amount) {
+          throw new BadRequestException('Payment amount exceeds remaining balance');
+        }
+      }
+
+      // Generate payment number
+      const paymentNumber = await this.generatePaymentNumber(tenantId);
+
+      // Create payment
+      const payment = queryRunner.manager.create(Payment, {
+        tenant_id: tenantId,
+        invoice_id: createPaymentDto.invoiceId,
+        payment_number: paymentNumber,
+        payment_date: createPaymentDto.paymentDate ? new Date(createPaymentDto.paymentDate) : new Date(),
+        payment_method: createPaymentDto.paymentMethod,
+        amount: createPaymentDto.amount,
+        transaction_id: createPaymentDto.transactionId,
+        gateway_response: createPaymentDto.gatewayResponse,
+        processing_fee: createPaymentDto.processingFee || 0,
+        status: PaymentStatus.COMPLETED,
+        notes: createPaymentDto.notes,
+        created_by: user.id,
       });
 
-      if (!invoice) {
-        throw new NotFoundException('Invoice not found');
+      const savedPayment = await queryRunner.manager.save(payment);
+
+      // Update invoice if payment is associated with an invoice
+      if (createPaymentDto.invoiceId && invoice) {
+        invoice.paid_amount += createPaymentDto.amount;
+        invoice.balance_amount = invoice.total_amount - invoice.paid_amount;
+        
+        // Update invoice status based on payment
+        if (invoice.balance_amount <= 0) {
+          invoice.status = InvoiceStatus.PAID;
+        } else if (invoice.paid_amount > 0 && invoice.status === InvoiceStatus.DRAFT) {
+          invoice.status = InvoiceStatus.SENT;
+        }
+
+        await queryRunner.manager.save(invoice);
       }
 
-      // Check if payment amount exceeds remaining balance
-      if (createPaymentDto.amount > invoice.balance_amount) {
-        throw new BadRequestException('Payment amount exceeds remaining balance');
-      }
+      await queryRunner.commitTransaction();
+      return savedPayment;
+    } catch (error) {
+      await queryRunner.rollbackTransaction();
+      throw error;
+    } finally {
+      await queryRunner.release();
     }
-
-    // Generate payment number
-    const paymentNumber = await this.generatePaymentNumber(tenantId);
-
-    // Create payment
-    const payment = this.paymentsRepository.create({
-      tenant_id: tenantId,
-      invoice_id: createPaymentDto.invoiceId,
-      payment_number: paymentNumber,
-      payment_date: createPaymentDto.paymentDate ? new Date(createPaymentDto.paymentDate) : new Date(),
-      payment_method: createPaymentDto.paymentMethod,
-      amount: createPaymentDto.amount,
-      transaction_id: createPaymentDto.transactionId,
-      gateway_response: createPaymentDto.gatewayResponse,
-      processing_fee: createPaymentDto.processingFee || 0,
-      status: PaymentStatus.COMPLETED,
-      notes: createPaymentDto.notes,
-      created_by: user.id,
-    });
-
-    const savedPayment = await this.paymentsRepository.save(payment);
-
-    // Update invoice if payment is associated with an invoice
-    if (createPaymentDto.invoiceId) {
-      await this.updateInvoiceBalance(createPaymentDto.invoiceId, createPaymentDto.amount);
-    }
-
-    return savedPayment;
   }
 
   async findAll(
@@ -132,7 +156,7 @@ export class PaymentsService {
     const payment = await this.findOne(id, tenantId);
 
     Object.assign(payment, {
-      status: updatePaymentDto.status || payment.status,
+      payment_status: updatePaymentDto.status || payment.payment_status,
       transaction_id: updatePaymentDto.transactionId || payment.transaction_id,
       gateway_response: updatePaymentDto.gatewayResponse || payment.gateway_response,
       notes: updatePaymentDto.notes !== undefined ? updatePaymentDto.notes : payment.notes,
@@ -144,7 +168,7 @@ export class PaymentsService {
   async remove(id: string, tenantId: string): Promise<void> {
     const payment = await this.findOne(id, tenantId);
     
-    if (payment.status === PaymentStatus.COMPLETED && payment.invoice_id) {
+    if (payment.payment_status === PaymentStatus.COMPLETED && payment.invoice_id) {
       // Reverse the payment on the invoice
       await this.updateInvoiceBalance(payment.invoice_id, -payment.amount);
     }
@@ -182,7 +206,7 @@ export class PaymentsService {
 
     // Update payment status based on gateway response
     if (!isSuccessful) {
-      payment.status = PaymentStatus.FAILED;
+      payment.payment_status = PaymentStatus.FAILED;
       await this.paymentsRepository.save(payment);
     }
 
@@ -192,7 +216,7 @@ export class PaymentsService {
   async refundPayment(id: string, amount: number, reason: string, tenantId: string): Promise<Payment> {
     const originalPayment = await this.findOne(id, tenantId);
     
-    if (originalPayment.status !== PaymentStatus.COMPLETED) {
+    if (originalPayment.payment_status !== PaymentStatus.COMPLETED) {
       throw new BadRequestException('Can only refund completed payments');
     }
 
@@ -210,7 +234,7 @@ export class PaymentsService {
 
     // Update original payment status if fully refunded
     if (amount === originalPayment.amount) {
-      originalPayment.status = PaymentStatus.REFUNDED;
+      originalPayment.payment_status = PaymentStatus.REFUNDED;
       await this.paymentsRepository.save(originalPayment);
     }
 

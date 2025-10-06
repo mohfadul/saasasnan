@@ -41,16 +41,16 @@ export class ABTestParticipant extends BaseEntity {
   @Column({ type: 'timestamp', nullable: true })
   dropped_at?: Date;
 
-  @Column({ type: 'jsonb', nullable: true })
+  @Column({ type: 'json', nullable: true })
   conversion_data?: Record<string, any>;
 
-  @Column({ type: 'jsonb', nullable: true })
+  @Column({ type: 'json', nullable: true })
   session_data?: Record<string, any>;
 
-  @Column({ type: 'jsonb', nullable: true })
+  @Column({ type: 'json', nullable: true })
   device_info?: Record<string, any>;
 
-  @Column({ type: 'jsonb', nullable: true })
+  @Column({ type: 'json', nullable: true })
   user_attributes?: Record<string, any>;
 
   @Column({ type: 'varchar', length: 255, nullable: true })
@@ -59,7 +59,7 @@ export class ABTestParticipant extends BaseEntity {
   @Column({ type: 'varchar', length: 255, nullable: true })
   device_id?: string;
 
-  @Column({ type: 'jsonb', nullable: true })
+  @Column({ type: 'json', nullable: true })
   metadata?: Record<string, any>;
 
   @ManyToOne(() => ABTest, { onDelete: 'CASCADE' })

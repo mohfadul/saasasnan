@@ -43,19 +43,19 @@ export class AppointmentRecurrence extends BaseEntity {
   @Column({ type: 'date', nullable: true })
   end_date?: Date; // End date for recurrence
 
-  @Column({ type: 'jsonb', default: '[]' })
+  @Column({ type: 'json', default: '[]' })
   days_of_week: number[]; // 0-6 (Sunday-Saturday) for weekly recurrence
 
-  @Column({ type: 'jsonb', default: '[]' })
+  @Column({ type: 'json', default: '[]' })
   days_of_month: number[]; // 1-31 for monthly recurrence
 
-  @Column({ type: 'jsonb', default: '[]' })
+  @Column({ type: 'json', default: '[]' })
   months_of_year: number[]; // 1-12 for yearly recurrence
 
   @Column({ type: 'boolean', default: true })
   is_active: boolean;
 
-  @Column({ type: 'timestamptz', nullable: true })
+  @Column({ type: 'timestamp', nullable: true })
   last_generated_at?: Date;
 
   @ManyToOne(() => Appointment, appointment => appointment.recurrences)

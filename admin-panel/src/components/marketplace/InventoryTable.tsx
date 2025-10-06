@@ -2,6 +2,8 @@ import React, { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { Inventory } from '../../types/marketplace';
 import { inventoryApi } from '../../services/marketplace-api';
+import { InventoryForm } from './InventoryForm';
+import { InventoryAdjustForm } from './InventoryAdjustForm';
 
 interface InventoryTableProps {
   clinicId?: string;
@@ -11,6 +13,9 @@ export const InventoryTable: React.FC<InventoryTableProps> = ({ clinicId }) => {
   const [searchTerm, setSearchTerm] = useState('');
   const [currentPage, setCurrentPage] = useState(1);
   const [statusFilter, setStatusFilter] = useState<string>('all');
+  const [selectedInventory, setSelectedInventory] = useState<Inventory | null>(null);
+  const [showAdjustModal, setShowAdjustModal] = useState(false);
+  const [showEditForm, setShowEditForm] = useState(false);
   const pageSize = 10;
 
   const { data: inventory, isLoading, error } = useQuery({
@@ -90,7 +95,56 @@ export const InventoryTable: React.FC<InventoryTableProps> = ({ clinicId }) => {
     );
   }
 
+  const handleAddItem = () => {
+    setSelectedInventory(null);
+    setShowEditForm(true);
+  };
+
+  const handleAdjustInventory = (item: Inventory) => {
+    setSelectedInventory(item);
+    setShowAdjustModal(true);
+  };
+
+  const handleEditInventory = (item: Inventory) => {
+    setSelectedInventory(item);
+    setShowEditForm(true);
+  };
+
   return (
+    <>
+      {/* Adjust Inventory Modal */}
+      {showAdjustModal && selectedInventory && (
+        <InventoryAdjustForm
+          inventory={selectedInventory}
+          onSuccess={() => {
+            setShowAdjustModal(false);
+            setSelectedInventory(null);
+            alert('Inventory adjusted successfully!');
+          }}
+          onCancel={() => {
+            setShowAdjustModal(false);
+            setSelectedInventory(null);
+          }}
+        />
+      )}
+
+      {/* Add/Edit Inventory Form Modal */}
+      {showEditForm && (
+        <InventoryForm
+          clinicId={clinicId || '550e8400-e29b-41d4-a716-446655440001'}
+          inventory={selectedInventory}
+          onSuccess={() => {
+            setShowEditForm(false);
+            setSelectedInventory(null);
+            alert(`Inventory ${selectedInventory ? 'updated' : 'created'} successfully!`);
+          }}
+          onCancel={() => {
+            setShowEditForm(false);
+            setSelectedInventory(null);
+          }}
+        />
+      )}
+
     <div className="bg-white shadow rounded-lg">
       {/* Search and Filters */}
       <div className="p-6 border-b border-gray-200">
@@ -140,6 +194,7 @@ export const InventoryTable: React.FC<InventoryTableProps> = ({ clinicId }) => {
             </select>
             <button
               type="button"
+              onClick={handleAddItem}
               className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
             >
               Add Item
@@ -243,10 +298,18 @@ export const InventoryTable: React.FC<InventoryTableProps> = ({ clinicId }) => {
                   </span>
                 </td>
                 <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                  <button className="text-blue-600 hover:text-blue-900 mr-3">
+                  <button 
+                    type="button"
+                    onClick={() => handleAdjustInventory(item)}
+                    className="text-blue-600 hover:text-blue-900 hover:underline mr-3"
+                  >
                     Adjust
                   </button>
-                  <button className="text-indigo-600 hover:text-indigo-900">
+                  <button 
+                    type="button"
+                    onClick={() => handleEditInventory(item)}
+                    className="text-indigo-600 hover:text-indigo-900 hover:underline"
+                  >
                     Edit
                   </button>
                 </td>
@@ -312,5 +375,6 @@ export const InventoryTable: React.FC<InventoryTableProps> = ({ clinicId }) => {
         </div>
       )}
     </div>
+    </>
   );
 };

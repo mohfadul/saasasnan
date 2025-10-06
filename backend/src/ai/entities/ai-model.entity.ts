@@ -36,7 +36,7 @@ export class AIModel extends BaseEntity {
   @PrimaryGeneratedColumn('uuid')
   id: string;
 
-  @Column({ type: 'uuid' })
+  @Column({ type: 'varchar', length: 36 })
   tenant_id: string;
 
   @Column({ type: 'varchar', length: 255 })
@@ -85,13 +85,13 @@ export class AIModel extends BaseEntity {
   @Column({ type: 'decimal', precision: 5, scale: 4, nullable: true })
   f1_score?: number;
 
-  @Column({ type: 'jsonb' })
+  @Column({ type: 'json' })
   model_config: Record<string, any>;
 
-  @Column({ type: 'jsonb' })
+  @Column({ type: 'json' })
   training_data_config: Record<string, any>;
 
-  @Column({ type: 'jsonb', nullable: true })
+  @Column({ type: 'json', nullable: true })
   feature_importance?: Record<string, any>;
 
   @Column({ type: 'integer', nullable: true })
@@ -118,19 +118,19 @@ export class AIModel extends BaseEntity {
   @Column({ type: 'boolean', default: true })
   auto_retrain: boolean;
 
-  @Column({ type: 'jsonb', nullable: true })
+  @Column({ type: 'json', nullable: true })
   performance_metrics?: Record<string, any>;
 
-  @Column({ type: 'jsonb', nullable: true })
+  @Column({ type: 'json', nullable: true })
   deployment_config?: Record<string, any>;
 
-  @Column({ type: 'jsonb', nullable: true })
+  @Column({ type: 'json', nullable: true })
   monitoring_config?: Record<string, any>;
 
   @Column({ type: 'boolean', default: false })
   is_production: boolean;
 
-  @Column({ type: 'jsonb', nullable: true })
+  @Column({ type: 'json', nullable: true })
   metadata?: Record<string, any>;
 
   @ManyToOne(() => Tenant)

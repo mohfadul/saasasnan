@@ -1,4 +1,5 @@
 import React from 'react';
+import { useNavigate } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import { Users, Calendar, DollarSign, TrendingUp, Clock, CheckCircle2 } from "lucide-react";
 import { MetricCard } from '../components/MetricCard';
@@ -16,6 +17,8 @@ const recentAppointments = [
 ];
 
 export const DashboardPage: React.FC = () => {
+  const navigate = useNavigate();
+  
   const { data: patientStats, isLoading: patientStatsLoading } = useQuery({
     queryKey: ['patient-stats'],
     queryFn: () => patientsApi.getPatientStats(),
@@ -111,7 +114,10 @@ export const DashboardPage: React.FC = () => {
           </CardHeader>
           <CardContent>
             <div className="grid gap-3">
-              <Button className="w-full justify-start h-auto py-4 bg-gradient-primary hover:opacity-90 transition-opacity shadow-md">
+              <Button 
+                onClick={() => navigate('/appointments')}
+                className="w-full justify-start h-auto py-4 bg-gradient-primary hover:opacity-90 transition-opacity shadow-md"
+              >
                 <Calendar className="mr-2 h-5 w-5" />
                 <div className="text-left">
                   <div className="font-semibold">Schedule Appointment</div>
@@ -119,7 +125,11 @@ export const DashboardPage: React.FC = () => {
                 </div>
               </Button>
               
-              <Button variant="outline" className="w-full justify-start h-auto py-4 hover:bg-muted/50">
+              <Button 
+                onClick={() => navigate('/patients')}
+                variant="outline" 
+                className="w-full justify-start h-auto py-4 hover:bg-muted/50"
+              >
                 <Users className="mr-2 h-5 w-5" />
                 <div className="text-left">
                   <div className="font-semibold">Add New Patient</div>
@@ -127,7 +137,11 @@ export const DashboardPage: React.FC = () => {
                 </div>
               </Button>
               
-              <Button variant="outline" className="w-full justify-start h-auto py-4 hover:bg-muted/50">
+              <Button 
+                onClick={() => navigate('/analytics')}
+                variant="outline" 
+                className="w-full justify-start h-auto py-4 hover:bg-muted/50"
+              >
                 <TrendingUp className="mr-2 h-5 w-5" />
                 <div className="text-left">
                   <div className="font-semibold">View Reports</div>
@@ -135,7 +149,11 @@ export const DashboardPage: React.FC = () => {
                 </div>
               </Button>
               
-              <Button variant="outline" className="w-full justify-start h-auto py-4 hover:bg-muted/50">
+              <Button 
+                onClick={() => navigate('/billing')}
+                variant="outline" 
+                className="w-full justify-start h-auto py-4 hover:bg-muted/50"
+              >
                 <DollarSign className="mr-2 h-5 w-5" />
                 <div className="text-left">
                   <div className="font-semibold">Process Payment</div>

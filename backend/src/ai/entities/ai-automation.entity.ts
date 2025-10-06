@@ -75,16 +75,16 @@ export class AIAutomation extends BaseEntity {
   })
   status: AutomationStatus;
 
-  @Column({ type: 'jsonb' })
+  @Column({ type: 'json' })
   trigger_config: Record<string, any>;
 
-  @Column({ type: 'jsonb' })
+  @Column({ type: 'json' })
   action_config: Record<string, any>;
 
-  @Column({ type: 'jsonb', nullable: true })
+  @Column({ type: 'json', nullable: true })
   condition_config?: Record<string, any>;
 
-  @Column({ type: 'jsonb', nullable: true })
+  @Column({ type: 'json', nullable: true })
   ai_config?: Record<string, any>;
 
   @Column({ type: 'boolean', default: true })
@@ -111,16 +111,16 @@ export class AIAutomation extends BaseEntity {
   @Column({ type: 'boolean', default: false })
   requires_approval: boolean;
 
-  @Column({ type: 'jsonb', nullable: true })
+  @Column({ type: 'json', nullable: true })
   approval_config?: Record<string, any>;
 
-  @Column({ type: 'jsonb', nullable: true })
+  @Column({ type: 'json', nullable: true })
   error_handling_config?: Record<string, any>;
 
-  @Column({ type: 'jsonb', nullable: true })
+  @Column({ type: 'json', nullable: true })
   notification_config?: Record<string, any>;
 
-  @Column({ type: 'jsonb', nullable: true })
+  @Column({ type: 'json', nullable: true })
   metadata?: Record<string, any>;
 
   @Column({ type: 'integer', default: 1000 }) // max executions per day
@@ -152,13 +152,13 @@ export class AIAutomationExecution extends BaseEntity {
   })
   status: AutomationExecutionStatus;
 
-  @Column({ type: 'jsonb' })
+  @Column({ type: 'json' })
   trigger_data: Record<string, any>;
 
-  @Column({ type: 'jsonb', nullable: true })
+  @Column({ type: 'json', nullable: true })
   execution_data?: Record<string, any>;
 
-  @Column({ type: 'jsonb', nullable: true })
+  @Column({ type: 'json', nullable: true })
   result_data?: Record<string, any>;
 
   @Column({ type: 'timestamp', nullable: true })
@@ -173,10 +173,10 @@ export class AIAutomationExecution extends BaseEntity {
   @Column({ type: 'text', nullable: true })
   error_message?: string;
 
-  @Column({ type: 'jsonb', nullable: true })
+  @Column({ type: 'json', nullable: true })
   error_details?: Record<string, any>;
 
-  @Column({ type: 'jsonb', nullable: true })
+  @Column({ type: 'json', nullable: true })
   metadata?: Record<string, any>;
 
   @ManyToOne(() => AIAutomation)

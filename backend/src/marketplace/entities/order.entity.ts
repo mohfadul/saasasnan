@@ -66,7 +66,7 @@ export class Order extends BaseEntity {
   @Column({ type: 'text', nullable: true })
   notes?: string;
 
-  @Column('jsonb', { nullable: true })
+  @Column('json', { nullable: true })
   shipping_address?: Record<string, any>;
 
   // Audit

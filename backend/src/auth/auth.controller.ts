@@ -1,6 +1,7 @@
 import { Controller, Post, Body, Get, UseGuards, Request } from '@nestjs/common';
 import { ApiTags, ApiOperation, ApiResponse, ApiBearerAuth } from '@nestjs/swagger';
 import { AuthGuard } from '@nestjs/passport';
+import { Throttle } from '@nestjs/throttler';
 import { AuthService, LoginDto } from './auth.service';
 import { User } from './entities/user.entity';
 import { RefreshTokenDto } from './dto/refresh-token.dto';
@@ -11,9 +12,11 @@ export class AuthController {
   constructor(private authService: AuthService) {}
 
   @Post('login')
+  @Throttle({ default: { limit: 5, ttl: 60000 } }) // 5 attempts per minute
   @ApiOperation({ summary: 'User login' })
   @ApiResponse({ status: 200, description: 'Login successful' })
   @ApiResponse({ status: 401, description: 'Invalid credentials' })
+  @ApiResponse({ status: 429, description: 'Too many login attempts' })
   async login(@Body() loginDto: LoginDto) {
     return this.authService.login(loginDto);
   }

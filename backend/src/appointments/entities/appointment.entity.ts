@@ -18,16 +18,16 @@ export enum AppointmentStatus {
 
 @Entity('appointments')
 export class Appointment extends BaseEntity {
-  @Column({ type: 'uuid' })
+  @Column({ type: 'varchar', length: 36 })
   tenant_id: string;
 
-  @Column({ type: 'uuid' })
+  @Column({ type: 'varchar', length: 36 })
   clinic_id: string;
 
-  @Column({ type: 'uuid' })
+  @Column({ type: 'varchar', length: 36 })
   patient_id: string;
 
-  @Column({ type: 'uuid' })
+  @Column({ type: 'varchar', length: 36 })
   provider_id: string;
 
   @Column({ type: 'timestamp' })
@@ -49,7 +49,7 @@ export class Appointment extends BaseEntity {
   @Column({ type: 'text', nullable: true })
   reason?: string;
 
-  @Column({ type: 'uuid', nullable: true })
+  @Column({ type: 'varchar', length: 36, nullable: true })
   room_id?: string;
 
   // Status tracking
@@ -69,14 +69,14 @@ export class Appointment extends BaseEntity {
   cancellation_reason?: string;
 
   // Recurrence
-  @Column('jsonb', { nullable: true })
+  @Column({ type: 'json', nullable: true })
   recurrence_pattern?: Record<string, any>;
 
-  @Column({ type: 'uuid', nullable: true })
+  @Column({ type: 'varchar', length: 36, nullable: true })
   master_appointment_id?: string;
 
   // Audit
-  @Column({ type: 'uuid', nullable: true })
+  @Column({ type: 'varchar', length: 36, nullable: true })
   created_by?: string;
 
   @ManyToOne(() => Tenant)

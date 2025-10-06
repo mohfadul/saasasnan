@@ -17,10 +17,11 @@ import { InvoicesService, CreateInvoiceDto, UpdateInvoiceDto } from './invoices.
 import { PaymentsService, CreatePaymentDto, UpdatePaymentDto } from './payments.service';
 import { InsuranceService, CreateInsuranceProviderDto, UpdateInsuranceProviderDto, CreatePatientInsuranceDto } from './insurance.service';
 import { User } from '../auth/entities/user.entity';
+import { TenantGuard } from '../tenants/tenant.guard';
 
 @ApiTags('Billing')
 @Controller('billing')
-@UseGuards(AuthGuard('jwt'))
+@UseGuards(AuthGuard('jwt'), TenantGuard)
 @ApiBearerAuth()
 export class BillingController {
   constructor(

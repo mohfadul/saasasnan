@@ -51,13 +51,13 @@ export class AnalyticsDashboard extends BaseEntity {
   })
   status: DashboardStatus;
 
-  @Column({ type: 'jsonb' })
+  @Column({ type: 'json' })
   layout_config: Record<string, any>;
 
-  @Column({ type: 'jsonb', nullable: true })
+  @Column({ type: 'json', nullable: true })
   filters_config?: Record<string, any>;
 
-  @Column({ type: 'jsonb', nullable: true })
+  @Column({ type: 'json', nullable: true })
   refresh_settings?: Record<string, any>;
 
   @Column({ type: 'boolean', default: false })
@@ -72,10 +72,10 @@ export class AnalyticsDashboard extends BaseEntity {
   @Column({ type: 'timestamp', nullable: true })
   last_refreshed_at?: Date;
 
-  @Column({ type: 'jsonb', nullable: true })
+  @Column({ type: 'json', nullable: true })
   sharing_settings?: Record<string, any>;
 
-  @Column({ type: 'jsonb', nullable: true })
+  @Column({ type: 'json', nullable: true })
   permissions?: Record<string, any>;
 
   @ManyToOne(() => Tenant)

@@ -102,26 +102,26 @@ export class TreatmentPlan extends BaseEntity {
   @Column({ type: 'text', nullable: true })
   patient_consent_notes?: string;
 
-  @Column({ type: 'timestamptz', nullable: true })
+  @Column({ type: 'timestamp', nullable: true })
   patient_consent_date?: Date;
 
   @Column({ type: 'boolean', default: false })
   patient_consent_obtained: boolean;
 
   // Status tracking
-  @Column({ type: 'timestamptz', nullable: true })
+  @Column({ type: 'timestamp', nullable: true })
   proposed_at?: Date;
 
-  @Column({ type: 'timestamptz', nullable: true })
+  @Column({ type: 'timestamp', nullable: true })
   accepted_at?: Date;
 
-  @Column({ type: 'timestamptz', nullable: true })
+  @Column({ type: 'timestamp', nullable: true })
   started_at?: Date;
 
-  @Column({ type: 'timestamptz', nullable: true })
+  @Column({ type: 'timestamp', nullable: true })
   completed_at?: Date;
 
-  @Column({ type: 'timestamptz', nullable: true })
+  @Column({ type: 'timestamp', nullable: true })
   cancelled_at?: Date;
 
   @Column({ type: 'text', nullable: true })

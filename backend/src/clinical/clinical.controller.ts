@@ -14,10 +14,11 @@ import { ApiTags, ApiOperation, ApiResponse, ApiBearerAuth, ApiQuery } from '@ne
 import { AuthGuard } from '@nestjs/passport';
 import { ClinicalNotesService, CreateClinicalNoteDto, UpdateClinicalNoteDto, CreateTreatmentPlanDto, UpdateTreatmentPlanDto } from './clinical-notes.service';
 import { User } from '../auth/entities/user.entity';
+import { TenantGuard } from '../tenants/tenant.guard';
 
 @ApiTags('Clinical')
 @Controller('clinical')
-@UseGuards(AuthGuard('jwt'))
+@UseGuards(AuthGuard('jwt'), TenantGuard)
 @ApiBearerAuth()
 export class ClinicalController {
   constructor(private readonly clinicalNotesService: ClinicalNotesService) {}

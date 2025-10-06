@@ -11,10 +11,16 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
     private authService: AuthService,
     private configService: ConfigService,
   ) {
+    const jwtSecret = configService.get<string>('JWT_SECRET');
+    
+    if (!jwtSecret && configService.get('NODE_ENV') === 'production') {
+      throw new Error('JWT_SECRET must be configured in production environment');
+    }
+    
     super({
       jwtFromRequest: ExtractJwt.fromAuthHeaderAsBearerToken(),
       ignoreExpiration: false,
-      secretOrKey: configService.get<string>('JWT_SECRET') || 'your-secret-key',
+      secretOrKey: jwtSecret || 'development-only-secret',
     });
   }
 

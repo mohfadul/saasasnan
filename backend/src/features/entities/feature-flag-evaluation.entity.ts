@@ -28,7 +28,7 @@ export class FeatureFlagEvaluation extends BaseEntity {
   @Column({ type: 'varchar', length: 255 })
   context_id: string;
 
-  @Column({ type: 'jsonb' })
+  @Column({ type: 'json' })
   evaluated_value: any;
 
   @Column({ type: 'varchar', length: 100, nullable: true })
@@ -40,10 +40,10 @@ export class FeatureFlagEvaluation extends BaseEntity {
   @Column({ type: 'boolean', default: false })
   is_targeted: boolean;
 
-  @Column({ type: 'jsonb', nullable: true })
+  @Column({ type: 'json', nullable: true })
   targeting_match?: Record<string, any>;
 
-  @Column({ type: 'jsonb', nullable: true })
+  @Column({ type: 'json', nullable: true })
   evaluation_context?: Record<string, any>;
 
   @Column({ type: 'timestamp' })
@@ -52,7 +52,7 @@ export class FeatureFlagEvaluation extends BaseEntity {
   @Column({ type: 'timestamp', nullable: true })
   expires_at?: Date;
 
-  @Column({ type: 'jsonb', nullable: true })
+  @Column({ type: 'json', nullable: true })
   metadata?: Record<string, any>;
 
   @ManyToOne(() => FeatureFlag, { onDelete: 'CASCADE' })

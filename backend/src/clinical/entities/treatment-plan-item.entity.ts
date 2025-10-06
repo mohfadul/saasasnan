@@ -110,23 +110,23 @@ export class TreatmentPlanItem extends BaseEntity {
   @Column({ type: 'text', nullable: true })
   special_instructions?: string;
 
-  @Column({ type: 'jsonb', default: '[]' })
+  @Column({ type: 'json', default: '[]' })
   required_materials?: string[]; // Materials needed for the procedure
 
-  @Column({ type: 'jsonb', default: '[]' })
+  @Column({ type: 'json', default: '[]' })
   contraindications?: string[]; // Medical contraindications
 
   // Status tracking
-  @Column({ type: 'timestamptz', nullable: true })
+  @Column({ type: 'timestamp', nullable: true })
   scheduled_at?: Date;
 
-  @Column({ type: 'timestamptz', nullable: true })
+  @Column({ type: 'timestamp', nullable: true })
   started_at?: Date;
 
-  @Column({ type: 'timestamptz', nullable: true })
+  @Column({ type: 'timestamp', nullable: true })
   completed_at?: Date;
 
-  @Column({ type: 'timestamptz', nullable: true })
+  @Column({ type: 'timestamp', nullable: true })
   cancelled_at?: Date;
 
   @Column({ type: 'text', nullable: true })

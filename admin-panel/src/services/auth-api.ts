@@ -18,7 +18,7 @@ interface RefreshTokenRequest {
 }
 
 class AuthApiService {
-  private baseURL = process.env.REACT_APP_API_URL || 'http://localhost:3000';
+  private baseURL = process.env.REACT_APP_API_URL || 'http://localhost:3001';
   private refreshPromise: Promise<string> | null = null;
 
   constructor() {
@@ -79,11 +79,11 @@ class AuthApiService {
       return null;
     }
 
-    this.refreshPromise = this.performTokenRefresh(refreshToken);
+    this.refreshPromise = this.performTokenRefresh(refreshToken).then(token => token || '');
     
     try {
       const newToken = await this.refreshPromise;
-      return newToken;
+      return newToken || null;
     } finally {
       this.refreshPromise = null;
     }

@@ -43,23 +43,66 @@ export interface InvoiceItem {
   updated_at: string;
 }
 
+// Sudan Payment System Enums
+export enum PaymentProvider {
+  BANK_OF_KHARTOUM = 'BankOfKhartoum',
+  FAISAL_ISLAMIC_BANK = 'FaisalIslamicBank',
+  OMDURMAN_NATIONAL_BANK = 'OmdurmanNationalBank',
+  ZAIN_BEDE = 'ZainBede',
+  CASHI = 'Cashi',
+  CASH_ON_DELIVERY = 'CashOnDelivery',
+  CASH_AT_BRANCH = 'CashAtBranch',
+  OTHER = 'Other',
+}
+
+export enum PaymentStatus {
+  PENDING = 'pending',
+  PROCESSING = 'processing',
+  CONFIRMED = 'confirmed',
+  COMPLETED = 'completed',
+  FAILED = 'failed',
+  REFUNDED = 'refunded',
+  REJECTED = 'rejected',
+  CANCELLED = 'cancelled',
+}
+
 export interface Payment {
   id: string;
   tenant_id: string;
   invoice_id?: string;
   payment_number: string;
   payment_date: string;
-  payment_method: 'cash' | 'card' | 'bank_transfer' | 'check' | 'insurance' | 'online';
+  payment_method: 'cash' | 'card' | 'bank_transfer' | 'check' | 'insurance' | 'online' | 'mobile_wallet' | string;
   amount: number;
   transaction_id?: string;
+  reference_number?: string;
   gateway_response?: Record<string, any>;
-  processing_fee: number;
+  processing_fee?: number;
+  payment_fee?: number;
+  applied_to_invoice?: number;
+  payment_status?: PaymentStatus | string;
   status: 'pending' | 'completed' | 'failed' | 'refunded' | 'cancelled';
+  refunded_amount?: number;
+  refunded_at?: string;
+  refund_reason?: string;
+  processed_at?: string;
+  payer_info?: Record<string, any>;
   notes?: string;
   created_by?: string;
   created_at: string;
   updated_at: string;
   invoice?: Invoice;
+  // Sudan Payment System Fields
+  provider?: PaymentProvider | string;
+  reference_id?: string;
+  payer_name?: string;
+  wallet_phone?: string;
+  receipt_url?: string;
+  reviewed_by?: string;
+  reviewed_at?: string;
+  admin_notes?: string;
+  reviewed_by_user?: any;
+  created_by_user?: any;
 }
 
 export interface InsuranceProvider {
@@ -173,3 +216,88 @@ export interface BillingStats {
     collectionRate: string;
   };
 }
+
+// Sudan Payment System Interfaces
+export interface CreateSudanPaymentRequest {
+  invoice_id: string;
+  provider: PaymentProvider;
+  reference_id: string;
+  payer_name: string;
+  wallet_phone?: string;
+  amount: number;
+  receipt_url?: string;
+  notes?: string;
+}
+
+export interface UpdateSudanPaymentRequest {
+  reference_id?: string;
+  payer_name?: string;
+  wallet_phone?: string;
+  amount?: number;
+  receipt_url?: string;
+  notes?: string;
+}
+
+export interface ConfirmPaymentRequest {
+  admin_notes?: string;
+}
+
+export interface RejectPaymentRequest {
+  reason: string;
+}
+
+export interface PaymentAuditLog {
+  id: string;
+  tenant_id: string;
+  payment_id: string;
+  action: 'created' | 'confirmed' | 'rejected' | 'refunded' | 'updated' | 'status_changed';
+  performed_by: string;
+  previous_status?: string;
+  new_status?: string;
+  ip_address?: string;
+  user_agent?: string;
+  changes?: Record<string, any>;
+  notes?: string;
+  created_at: string;
+  performed_by_user?: any;
+}
+
+export interface PaymentMethod {
+  id: string;
+  tenant_id: string;
+  provider_code: string;
+  provider_name: string;
+  provider_type: 'bank_transfer' | 'mobile_wallet' | 'cash';
+  is_active: boolean;
+  requires_reference: boolean;
+  requires_receipt: boolean;
+  receipt_threshold?: number;
+  validation_pattern?: string;
+  icon_url?: string;
+  instructions?: string;
+  sort_order: number;
+  created_at: string;
+  updated_at: string;
+}
+
+export const PaymentProviderLabels: Record<PaymentProvider, string> = {
+  [PaymentProvider.BANK_OF_KHARTOUM]: 'Bank of Khartoum',
+  [PaymentProvider.FAISAL_ISLAMIC_BANK]: 'Faisal Islamic Bank',
+  [PaymentProvider.OMDURMAN_NATIONAL_BANK]: 'Omdurman National Bank',
+  [PaymentProvider.ZAIN_BEDE]: 'Zain Bede (زين بيدي)',
+  [PaymentProvider.CASHI]: 'Cashi Agent Wallet',
+  [PaymentProvider.CASH_ON_DELIVERY]: 'Cash on Delivery',
+  [PaymentProvider.CASH_AT_BRANCH]: 'Cash at Branch',
+  [PaymentProvider.OTHER]: 'Other',
+};
+
+export const PaymentProviderTypes: Record<PaymentProvider, 'bank' | 'wallet' | 'cash' | 'other'> = {
+  [PaymentProvider.BANK_OF_KHARTOUM]: 'bank',
+  [PaymentProvider.FAISAL_ISLAMIC_BANK]: 'bank',
+  [PaymentProvider.OMDURMAN_NATIONAL_BANK]: 'bank',
+  [PaymentProvider.ZAIN_BEDE]: 'wallet',
+  [PaymentProvider.CASHI]: 'wallet',
+  [PaymentProvider.CASH_ON_DELIVERY]: 'cash',
+  [PaymentProvider.CASH_AT_BRANCH]: 'cash',
+  [PaymentProvider.OTHER]: 'other',
+};

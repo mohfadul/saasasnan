@@ -61,13 +61,13 @@ export class DashboardWidget extends BaseEntity {
   })
   chart_type?: ChartType;
 
-  @Column({ type: 'jsonb' })
+  @Column({ type: 'json' })
   widget_config: Record<string, any>;
 
-  @Column({ type: 'jsonb' })
+  @Column({ type: 'json' })
   data_config: Record<string, any>;
 
-  @Column({ type: 'jsonb', nullable: true })
+  @Column({ type: 'json', nullable: true })
   chart_options?: Record<string, any>;
 
   @Column({ type: 'integer' })
@@ -97,22 +97,22 @@ export class DashboardWidget extends BaseEntity {
   @Column({ type: 'boolean', default: false })
   is_hidden: boolean;
 
-  @Column({ type: 'jsonb', nullable: true })
+  @Column({ type: 'json', nullable: true })
   filters?: Record<string, any>;
 
-  @Column({ type: 'jsonb', nullable: true })
+  @Column({ type: 'json', nullable: true })
   drill_down_config?: Record<string, any>;
 
   @Column({ type: 'timestamp', nullable: true })
   last_updated_at?: Date;
 
-  @Column({ type: 'jsonb', nullable: true })
+  @Column({ type: 'json', nullable: true })
   cache_settings?: Record<string, any>;
 
   @Column({ type: 'integer', default: 300 }) // seconds
   cache_ttl: number;
 
-  @Column({ type: 'jsonb', nullable: true })
+  @Column({ type: 'json', nullable: true })
   alert_config?: Record<string, any>;
 
   @ManyToOne(() => AnalyticsDashboard, dashboard => dashboard.widgets, { onDelete: 'CASCADE' })

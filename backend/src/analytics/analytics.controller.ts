@@ -14,12 +14,13 @@ import {
 } from '@nestjs/common';
 import { Response } from 'express';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard';
+import { TenantGuard } from '../tenants/tenant.guard';
 import { AnalyticsService, AnalyticsFilter } from './analytics.service';
 import { DashboardService, CreateDashboardDto, CreateWidgetDto } from './dashboard.service';
 import { ReportsService, CreateReportDto } from './reports.service';
 
 @Controller('analytics')
-@UseGuards(JwtAuthGuard)
+@UseGuards(JwtAuthGuard, TenantGuard)
 export class AnalyticsController {
   constructor(
     private readonly analyticsService: AnalyticsService,

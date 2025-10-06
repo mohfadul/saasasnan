@@ -4,6 +4,7 @@ import { AnalyticsController } from './analytics.controller';
 import { AnalyticsService } from './analytics.service';
 import { DashboardService } from './dashboard.service';
 import { ReportsService } from './reports.service';
+import { CacheService } from '../common/services/cache.service';
 
 // Analytics Entities
 import { AnalyticsMetric } from './entities/analytics-metric.entity';
@@ -42,7 +43,7 @@ import { Tenant } from '../tenants/entities/tenant.entity';
     ]),
   ],
   controllers: [AnalyticsController],
-  providers: [AnalyticsService, DashboardService, ReportsService],
+  providers: [AnalyticsService, DashboardService, ReportsService, CacheService],
   exports: [AnalyticsService, DashboardService, ReportsService],
 })
 export class AnalyticsModule {}

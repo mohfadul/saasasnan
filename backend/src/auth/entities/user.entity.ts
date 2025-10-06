@@ -14,10 +14,10 @@ export enum UserRole {
 
 @Entity('users')
 export class User extends BaseEntity {
-  @Column({ type: 'uuid' })
+  @Column({ type: 'varchar', length: 36 })
   tenant_id: string;
 
-  @Column({ type: 'uuid', nullable: true })
+  @Column({ type: 'varchar', length: 36, nullable: true })
   clinic_id?: string;
 
   @Column({ length: 255 })

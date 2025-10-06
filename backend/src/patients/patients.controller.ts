@@ -15,10 +15,11 @@ import { AuthGuard } from '@nestjs/passport';
 import { PatientsService } from './patients.service';
 import { CreatePatientDto, UpdatePatientDto } from './dto';
 import { User } from '../auth/entities/user.entity';
+import { TenantGuard } from '../tenants/tenant.guard';
 
 @ApiTags('Patients')
 @Controller('patients')
-@UseGuards(AuthGuard('jwt'))
+@UseGuards(AuthGuard('jwt'), TenantGuard)
 @ApiBearerAuth()
 export class PatientsController {
   constructor(private readonly patientsService: PatientsService) {}

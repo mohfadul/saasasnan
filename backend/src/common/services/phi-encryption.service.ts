@@ -25,8 +25,10 @@ export class PHIEncryptionService {
     const key = crypto.scryptSync(this.encryptionKey, 'salt', 32);
     const iv = crypto.randomBytes(16);
     
-    const cipher = crypto.createCipher(algorithm, key);
-    cipher.setAAD(Buffer.from(JSON.stringify(context)));
+    // Use createCipheriv instead of deprecated createCipher
+    const cipher = crypto.createCipheriv(algorithm, key, iv);
+    // Don't use AAD since we don't store the context in DB
+    // cipher.setAAD(Buffer.from(JSON.stringify(context)));
     
     let encrypted = cipher.update(plaintext, 'utf8', 'hex');
     encrypted += cipher.final('hex');
@@ -49,8 +51,10 @@ export class PHIEncryptionService {
     const authTag = encryptedData.encryptedData.subarray(16, 32);
     const encrypted = encryptedData.encryptedData.subarray(32);
     
-    const decipher = crypto.createDecipher(algorithm, key);
-    decipher.setAAD(Buffer.from(JSON.stringify(encryptedData.encryptionContext)));
+    // Use createDecipheriv instead of deprecated createDecipher
+    const decipher = crypto.createDecipheriv(algorithm, key, iv);
+    // Don't use AAD since we don't store the context in DB
+    // decipher.setAAD(Buffer.from(JSON.stringify(encryptedData.encryptionContext)));
     decipher.setAuthTag(authTag);
     
     let decrypted = decipher.update(encrypted, null, 'utf8');

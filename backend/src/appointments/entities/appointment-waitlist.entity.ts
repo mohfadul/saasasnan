@@ -72,16 +72,16 @@ export class AppointmentWaitlist extends BaseEntity {
   })
   status: WaitlistStatus;
 
-  @Column({ type: 'timestamptz', nullable: true })
+  @Column({ type: 'timestamp', nullable: true })
   contacted_at?: Date;
 
-  @Column({ type: 'timestamptz', nullable: true })
+  @Column({ type: 'timestamp', nullable: true })
   scheduled_at?: Date;
 
   @Column({ type: 'uuid', nullable: true })
   scheduled_appointment_id?: string;
 
-  @Column({ type: 'timestamptz', nullable: true })
+  @Column({ type: 'timestamp', nullable: true })
   expires_at?: Date;
 
   // Audit

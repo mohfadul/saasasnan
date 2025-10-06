@@ -11,6 +11,9 @@ const api = axios.create({
   },
 });
 
+// Export as apiClient for compatibility with other services
+export const apiClient = api;
+
 // Request interceptor to add auth token
 api.interceptors.request.use(
   (config) => {

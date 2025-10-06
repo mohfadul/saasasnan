@@ -11,6 +11,11 @@ import { Payment } from './entities/payment.entity';
 import { InsuranceProvider } from './entities/insurance-provider.entity';
 import { PatientInsurance } from './entities/patient-insurance.entity';
 import { Patient } from '../patients/entities/patient.entity';
+// Sudan Payment System
+import { PaymentAuditLog } from './entities/payment-audit-log.entity';
+import { SudanPaymentsController } from './controllers/sudan-payments.controller';
+import { SudanPaymentsService } from './services/sudan-payments.service';
+import { PaymentValidationService } from './services/payment-validation.service';
 
 @Module({
   imports: [
@@ -21,20 +26,27 @@ import { Patient } from '../patients/entities/patient.entity';
       InsuranceProvider,
       PatientInsurance,
       Patient,
+      PaymentAuditLog, // Sudan Payment System
     ]),
   ],
-  controllers: [BillingController],
+  controllers: [
+    BillingController,
+    SudanPaymentsController, // Sudan Payment System
+  ],
   providers: [
     BillingService,
     InvoicesService,
     PaymentsService,
     InsuranceService,
+    SudanPaymentsService, // Sudan Payment System
+    PaymentValidationService, // Sudan Payment System
   ],
   exports: [
     BillingService,
     InvoicesService,
     PaymentsService,
     InsuranceService,
+    SudanPaymentsService, // Sudan Payment System
   ],
 })
 export class BillingModule {}

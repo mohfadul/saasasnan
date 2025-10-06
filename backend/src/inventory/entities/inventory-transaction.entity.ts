@@ -15,16 +15,16 @@ export enum TransactionType {
 
 @Entity('inventory_transactions')
 export class InventoryTransaction extends BaseEntity {
-  @Column({ type: 'uuid' })
+  @Column({ type: 'varchar', length: 36 })
   tenant_id: string;
 
-  @Column({ type: 'uuid' })
+  @Column({ type: 'varchar', length: 36 })
   clinic_id: string;
 
-  @Column({ type: 'uuid' })
+  @Column({ type: 'varchar', length: 36 })
   product_id: string;
 
-  @Column({ type: 'uuid' })
+  @Column({ type: 'varchar', length: 36 })
   inventory_id: string;
 
   // Transaction details
@@ -47,14 +47,14 @@ export class InventoryTransaction extends BaseEntity {
   @Column({ length: 50, nullable: true })
   reference_type?: string; // 'order', 'appointment', 'manual', etc.
 
-  @Column({ type: 'uuid', nullable: true })
+  @Column({ type: 'varchar', length: 36, nullable: true })
   reference_id?: string;
 
   @Column({ type: 'text', nullable: true })
   notes?: string;
 
   // Audit
-  @Column({ type: 'uuid', nullable: true })
+  @Column({ type: 'varchar', length: 36, nullable: true })
   created_by?: string;
 
   @ManyToOne(() => Inventory, inventory => inventory.transactions)

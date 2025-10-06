@@ -1,6 +1,8 @@
 import { Module } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
 import { TypeOrmModule } from '@nestjs/typeorm';
+import { ThrottlerModule, ThrottlerGuard } from '@nestjs/throttler';
+import { APP_GUARD } from '@nestjs/core';
 import { AuthModule } from './auth/auth.module';
 import { TenantsModule } from './tenants/tenants.module';
 import { PatientsModule } from './patients/patients.module';
@@ -13,6 +15,7 @@ import { AnalyticsModule } from './analytics/analytics.module';
 import { AIModule } from './ai/ai.module';
 import { FeaturesModule } from './features/features.module';
 import { DatabaseModule } from './database/database.module';
+import { HealthModule } from './health/health.module';
 
 @Module({
   imports: [
@@ -20,7 +23,12 @@ import { DatabaseModule } from './database/database.module';
       isGlobal: true,
       envFilePath: '.env',
     }),
+    ThrottlerModule.forRoot([{
+      ttl: 60000, // 60 seconds
+      limit: 100, // 100 requests per minute per IP
+    }]),
     DatabaseModule,
+    HealthModule,
     AuthModule,
     TenantsModule,
     PatientsModule,
@@ -28,10 +36,16 @@ import { DatabaseModule } from './database/database.module';
     MarketplaceModule,
     InventoryModule,
     BillingModule,
-            ClinicalModule,
-            AnalyticsModule,
-            AIModule,
-            FeaturesModule,
-          ],
+    ClinicalModule,
+    AnalyticsModule,
+    AIModule,
+    FeaturesModule,
+  ],
+  providers: [
+    {
+      provide: APP_GUARD,
+      useClass: ThrottlerGuard,
+    },
+  ],
 })
 export class AppModule {}

@@ -5,39 +5,62 @@ import Redis from 'ioredis';
 @Injectable()
 export class CacheService {
   private readonly logger = new Logger(CacheService.name);
-  private redis: Redis;
+  private redis: Redis | null = null;
+  private redisEnabled: boolean = false;
 
   constructor(private configService: ConfigService) {
-    this.redis = new Redis({
-      host: this.configService.get('REDIS_HOST', 'localhost'),
-      port: this.configService.get('REDIS_PORT', 6379),
-      password: this.configService.get('REDIS_PASSWORD'),
-      maxRetriesPerRequest: 3,
-      lazyConnect: true,
-      connectTimeout: 10000,
-      commandTimeout: 5000,
-    });
+    // Only enable Redis if explicitly configured
+    const redisEnabled = this.configService.get('REDIS_ENABLED', 'false');
+    
+    if (redisEnabled === 'true') {
+      this.redisEnabled = true;
+      this.redis = new Redis({
+        host: this.configService.get('REDIS_HOST', 'localhost'),
+        port: this.configService.get('REDIS_PORT', 6379),
+        password: this.configService.get('REDIS_PASSWORD'),
+        maxRetriesPerRequest: 3,
+        retryStrategy: (times) => {
+          if (times > 3) {
+            this.logger.warn('Redis max retries reached, disabling cache');
+            this.redisEnabled = false;
+            return null; // Stop retrying
+          }
+          return Math.min(times * 100, 3000);
+        },
+        lazyConnect: true,
+        connectTimeout: 5000,
+        commandTimeout: 3000,
+      });
 
-    this.redis.on('connect', () => {
-      this.logger.log('Redis connected successfully');
-    });
+      this.redis.on('connect', () => {
+        this.logger.log('Redis connected successfully');
+        this.redisEnabled = true;
+      });
 
-    this.redis.on('error', (error) => {
-      this.logger.error('Redis connection error:', error);
-    });
+      this.redis.on('error', (error) => {
+        this.logger.warn('Redis unavailable, caching disabled');
+        this.redisEnabled = false;
+      });
+    } else {
+      this.logger.log('Redis disabled - running without cache');
+    }
   }
 
   async get<T>(key: string): Promise<T | null> {
+    if (!this.redisEnabled || !this.redis) return null;
+    
     try {
       const value = await this.redis.get(key);
       return value ? JSON.parse(value) : null;
     } catch (error) {
-      this.logger.error(`Error getting cache key ${key}:`, error);
+      this.logger.debug(`Cache miss for key ${key}`);
       return null;
     }
   }
 
   async set(key: string, value: any, ttlSeconds?: number): Promise<boolean> {
+    if (!this.redisEnabled || !this.redis) return false;
+    
     try {
       const serialized = JSON.stringify(value);
       if (ttlSeconds) {
@@ -47,42 +70,47 @@ export class CacheService {
       }
       return true;
     } catch (error) {
-      this.logger.error(`Error setting cache key ${key}:`, error);
+      this.logger.debug(`Cache set failed for key ${key}`);
       return false;
     }
   }
 
   async del(key: string): Promise<boolean> {
+    if (!this.redisEnabled || !this.redis) return false;
+    
     try {
       await this.redis.del(key);
       return true;
     } catch (error) {
-      this.logger.error(`Error deleting cache key ${key}:`, error);
       return false;
     }
   }
 
   async exists(key: string): Promise<boolean> {
+    if (!this.redisEnabled || !this.redis) return false;
+    
     try {
       const result = await this.redis.exists(key);
       return result === 1;
     } catch (error) {
-      this.logger.error(`Error checking cache key ${key}:`, error);
       return false;
     }
   }
 
   async getMany<T>(keys: string[]): Promise<(T | null)[]> {
+    if (!this.redisEnabled || !this.redis) return keys.map(() => null);
+    
     try {
       const values = await this.redis.mget(...keys);
       return values.map(value => value ? JSON.parse(value) : null);
     } catch (error) {
-      this.logger.error(`Error getting multiple cache keys:`, error);
       return keys.map(() => null);
     }
   }
 
   async setMany(keyValuePairs: Array<{ key: string; value: any; ttl?: number }>): Promise<boolean> {
+    if (!this.redisEnabled || !this.redis) return false;
+    
     try {
       const pipeline = this.redis.pipeline();
       
@@ -98,12 +126,13 @@ export class CacheService {
       await pipeline.exec();
       return true;
     } catch (error) {
-      this.logger.error(`Error setting multiple cache keys:`, error);
       return false;
     }
   }
 
   async invalidatePattern(pattern: string): Promise<boolean> {
+    if (!this.redisEnabled || !this.redis) return false;
+    
     try {
       const keys = await this.redis.keys(pattern);
       if (keys.length > 0) {
@@ -111,21 +140,23 @@ export class CacheService {
       }
       return true;
     } catch (error) {
-      this.logger.error(`Error invalidating cache pattern ${pattern}:`, error);
       return false;
     }
   }
 
   async getTTL(key: string): Promise<number> {
+    if (!this.redisEnabled || !this.redis) return -1;
+    
     try {
       return await this.redis.ttl(key);
     } catch (error) {
-      this.logger.error(`Error getting TTL for key ${key}:`, error);
       return -1;
     }
   }
 
   async extendTTL(key: string, additionalSeconds: number): Promise<boolean> {
+    if (!this.redisEnabled || !this.redis) return false;
+    
     try {
       const currentTTL = await this.getTTL(key);
       if (currentTTL > 0) {
@@ -133,7 +164,6 @@ export class CacheService {
       }
       return true;
     } catch (error) {
-      this.logger.error(`Error extending TTL for key ${key}:`, error);
       return false;
     }
   }
@@ -173,6 +203,12 @@ export class CacheService {
   }
 
   async onModuleDestroy() {
-    await this.redis.quit();
+    if (this.redis) {
+      try {
+        await this.redis.quit();
+      } catch (error) {
+        this.logger.debug('Redis already disconnected');
+      }
+    }
   }
 }

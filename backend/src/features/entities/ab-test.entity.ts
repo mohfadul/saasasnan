@@ -58,16 +58,16 @@ export class ABTest extends BaseEntity {
   })
   traffic_split: ABTestTrafficSplit;
 
-  @Column({ type: 'jsonb' })
+  @Column({ type: 'json' })
   variants: Record<string, any>;
 
-  @Column({ type: 'jsonb' })
+  @Column({ type: 'json' })
   traffic_allocation: Record<string, number>;
 
-  @Column({ type: 'jsonb', nullable: true })
+  @Column({ type: 'json', nullable: true })
   targeting_rules?: Record<string, any>;
 
-  @Column({ type: 'jsonb' })
+  @Column({ type: 'json' })
   success_metrics: Record<string, any>;
 
   @Column({ type: 'decimal', precision: 5, scale: 2, default: 0.05 })
@@ -88,7 +88,7 @@ export class ABTest extends BaseEntity {
   @Column({ type: 'timestamp', nullable: true })
   planned_end_date?: Date;
 
-  @Column({ type: 'jsonb' })
+  @Column({ type: 'json' })
   results: {
     total_participants: number;
     variant_stats: Record<string, {
@@ -110,10 +110,10 @@ export class ABTest extends BaseEntity {
   @Column({ type: 'boolean', default: false })
   auto_apply_winner: boolean;
 
-  @Column({ type: 'jsonb', nullable: true })
+  @Column({ type: 'json', nullable: true })
   experiment_config?: Record<string, any>;
 
-  @Column({ type: 'jsonb', nullable: true })
+  @Column({ type: 'json', nullable: true })
   metadata?: Record<string, any>;
 
   @ManyToOne(() => Tenant)

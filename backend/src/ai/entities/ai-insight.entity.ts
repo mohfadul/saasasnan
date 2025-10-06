@@ -44,10 +44,10 @@ export class AIInsight extends BaseEntity {
   @PrimaryGeneratedColumn('uuid')
   id: string;
 
-  @Column({ type: 'uuid' })
+  @Column({ type: 'varchar', length: 36 })
   tenant_id: string;
 
-  @Column({ type: 'uuid', nullable: true })
+  @Column({ type: 'varchar', length: 36, nullable: true })
   clinic_id?: string;
 
   @Column({ type: 'varchar', length: 255 })
@@ -88,16 +88,16 @@ export class AIInsight extends BaseEntity {
   @Column({ type: 'decimal', precision: 8, scale: 6, nullable: true })
   impact_score?: number;
 
-  @Column({ type: 'jsonb' })
+  @Column({ type: 'json' })
   data_points: Record<string, any>;
 
-  @Column({ type: 'jsonb', nullable: true })
+  @Column({ type: 'json', nullable: true })
   recommendations?: Record<string, any>;
 
-  @Column({ type: 'jsonb', nullable: true })
+  @Column({ type: 'json', nullable: true })
   supporting_evidence?: Record<string, any>;
 
-  @Column({ type: 'jsonb', nullable: true })
+  @Column({ type: 'json', nullable: true })
   related_metrics?: Record<string, any>;
 
   @Column({ type: 'timestamp', nullable: true })
@@ -106,19 +106,19 @@ export class AIInsight extends BaseEntity {
   @Column({ type: 'timestamp', nullable: true })
   reviewed_at?: Date;
 
-  @Column({ type: 'uuid', nullable: true })
+  @Column({ type: 'varchar', length: 36, nullable: true })
   reviewed_by?: string;
 
   @Column({ type: 'text', nullable: true })
   review_notes?: string;
 
-  @Column({ type: 'jsonb', nullable: true })
+  @Column({ type: 'json', nullable: true })
   action_taken?: Record<string, any>;
 
   @Column({ type: 'timestamp', nullable: true })
   action_taken_at?: Date;
 
-  @Column({ type: 'uuid', nullable: true })
+  @Column({ type: 'varchar', length: 36, nullable: true })
   action_taken_by?: string;
 
   @Column({ type: 'boolean', default: false })
@@ -127,10 +127,10 @@ export class AIInsight extends BaseEntity {
   @Column({ type: 'boolean', default: false })
   requires_human_review: boolean;
 
-  @Column({ type: 'jsonb', nullable: true })
+  @Column({ type: 'json', nullable: true })
   tags?: string[];
 
-  @Column({ type: 'jsonb', nullable: true })
+  @Column({ type: 'json', nullable: true })
   metadata?: Record<string, any>;
 
   @Column({ type: 'integer', default: 30 }) // days

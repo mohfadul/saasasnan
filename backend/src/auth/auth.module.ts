@@ -17,12 +17,20 @@ import { CacheService } from '../common/services/cache.service';
     JwtModule.registerAsync({
       imports: [ConfigModule],
       inject: [ConfigService],
-      useFactory: (configService: ConfigService) => ({
-        secret: configService.get<string>('JWT_SECRET') || 'your-secret-key',
-        signOptions: {
-          expiresIn: configService.get<string>('JWT_EXPIRES_IN') || '24h',
-        },
-      }),
+      useFactory: (configService: ConfigService) => {
+        const jwtSecret = configService.get<string>('JWT_SECRET');
+        
+        if (!jwtSecret && configService.get('NODE_ENV') === 'production') {
+          throw new Error('JWT_SECRET must be configured in production environment');
+        }
+        
+        return {
+          secret: jwtSecret || 'development-only-secret',
+          signOptions: {
+            expiresIn: configService.get<string>('JWT_EXPIRES_IN') || '24h',
+          },
+        };
+      },
     }),
     TenantsModule,
   ],

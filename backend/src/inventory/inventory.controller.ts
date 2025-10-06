@@ -14,10 +14,11 @@ import { ApiTags, ApiOperation, ApiResponse, ApiBearerAuth, ApiQuery } from '@ne
 import { AuthGuard } from '@nestjs/passport';
 import { InventoryService, CreateInventoryDto, UpdateInventoryDto, InventoryTransactionDto } from './inventory.service';
 import { User } from '../auth/entities/user.entity';
+import { TenantGuard } from '../tenants/tenant.guard';
 
 @ApiTags('Inventory')
 @Controller('inventory')
-@UseGuards(AuthGuard('jwt'))
+@UseGuards(AuthGuard('jwt'), TenantGuard)
 @ApiBearerAuth()
 export class InventoryController {
   constructor(private readonly inventoryService: InventoryService) {}

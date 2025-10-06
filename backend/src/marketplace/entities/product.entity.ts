@@ -7,13 +7,13 @@ import { OrderItem } from './order-item.entity';
 
 @Entity('products')
 export class Product extends BaseEntity {
-  @Column({ type: 'uuid' })
+  @Column({ type: 'varchar', length: 36 })
   tenant_id: string;
 
-  @Column({ type: 'uuid' })
+  @Column({ type: 'varchar', length: 36 })
   supplier_id: string;
 
-  @Column({ type: 'uuid', nullable: true })
+  @Column({ type: 'varchar', length: 36, nullable: true })
   category_id?: string;
 
   // Product details
@@ -46,13 +46,13 @@ export class Product extends BaseEntity {
   minimum_price?: number;
 
   // Product attributes
-  @Column('jsonb', { default: {} })
+  @Column({ type: 'json', default: '{}' })
   attributes: Record<string, any>;
 
-  @Column('jsonb', { default: {} })
+  @Column({ type: 'json', default: '{}' })
   specifications: Record<string, any>;
 
-  @Column('jsonb', { default: [] })
+  @Column({ type: 'json', default: '[]' })
   images: string[];
 
   // Status and metadata
@@ -67,7 +67,7 @@ export class Product extends BaseEntity {
   @Column({ default: false })
   is_featured: boolean;
 
-  @Column('text', { array: true, default: [] })
+  @Column({ type: 'json', default: '[]' })
   tags: string[];
 
   // SEO and search
@@ -77,7 +77,7 @@ export class Product extends BaseEntity {
   @Column({ type: 'text', nullable: true })
   meta_description?: string;
 
-  @Column('text', { array: true, default: [] })
+  @Column({ type: 'json', default: '[]' })
   search_keywords: string[];
 
   @ManyToOne(() => Supplier, supplier => supplier.products)

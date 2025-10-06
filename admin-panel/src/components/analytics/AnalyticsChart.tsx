@@ -57,7 +57,7 @@ const AnalyticsChart: React.FC<AnalyticsChartProps> = ({
   options,
   className = '',
 }) => {
-  const chartRef = useRef<ChartJS>(null);
+  const chartRef = useRef<any>(null);
 
   const defaultOptions = {
     responsive: true,
@@ -274,6 +274,7 @@ export const transformPieData = (
     labels: data.map(item => item.label),
     datasets: [
       {
+        label: 'Data',
         data: data.map(item => item.value),
         backgroundColor: colors.slice(0, data.length),
         borderColor: '#ffffff',
