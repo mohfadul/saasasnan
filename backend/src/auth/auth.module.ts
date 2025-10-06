@@ -8,6 +8,7 @@ import { AuthService } from './auth.service';
 import { JwtStrategy } from './jwt.strategy';
 import { User } from './entities/user.entity';
 import { TenantsModule } from '../tenants/tenants.module';
+import { CacheService } from '../common/services/cache.service';
 
 @Module({
   imports: [
@@ -26,7 +27,7 @@ import { TenantsModule } from '../tenants/tenants.module';
     TenantsModule,
   ],
   controllers: [AuthController],
-  providers: [AuthService, JwtStrategy],
+  providers: [AuthService, JwtStrategy, CacheService],
   exports: [AuthService],
 })
 export class AuthModule {}

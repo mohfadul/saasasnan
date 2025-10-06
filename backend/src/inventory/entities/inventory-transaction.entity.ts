@@ -1,7 +1,7 @@
 import { Entity, Column, ManyToOne, JoinColumn } from 'typeorm';
 import { BaseEntity } from '../../common/entities/base.entity';
 import { Inventory } from './inventory.entity';
-import { Product } from '../marketplace/entities/product.entity';
+import { Product } from '../../marketplace/entities/product.entity';
 import { User } from '../../auth/entities/user.entity';
 
 export enum TransactionType {

@@ -173,7 +173,7 @@ export class MarketplaceController {
     @Query('supplierId') supplierId?: string,
     @Query('status') status?: string,
   ) {
-    return this.ordersService.findAll(req.user.tenant_id, req.user.clinic_id, supplierId, status);
+    return this.ordersService.findAll(req.user.tenant_id, req.user.clinic_id, supplierId, status as any);
   }
 
   @Get('orders/:id')

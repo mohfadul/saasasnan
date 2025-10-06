@@ -2,7 +2,7 @@ import { Entity, Column, ManyToOne, JoinColumn, OneToMany } from 'typeorm';
 import { BaseEntity } from '../../common/entities/base.entity';
 import { Supplier } from './supplier.entity';
 import { ProductCategory } from './product-category.entity';
-import { Inventory } from './inventory.entity';
+import { Inventory } from '../../inventory/entities/inventory.entity';
 import { OrderItem } from './order-item.entity';
 
 @Entity('products')
@@ -88,7 +88,7 @@ export class Product extends BaseEntity {
   @JoinColumn({ name: 'category_id' })
   category?: ProductCategory;
 
-  @OneToMany(() => Inventory, inventory => inventory.product)
+  @OneToMany('Inventory', 'product')
   inventories: Inventory[];
 
   @OneToMany(() => OrderItem, orderItem => orderItem.product)

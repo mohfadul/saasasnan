@@ -230,11 +230,11 @@ jobs:
 
       - name: Notify deployment status
         uses: 8398a7/action-slack@v3
-        if: always()
+        if: always() && secrets.SLACK_WEBHOOK != ''
         with:
           status: ${{ job.status }}
           channel: '#deployments'
-          webhook_url: ${{ secrets.SLACK_WEBHOOK }}
+          webhook: ${{ secrets.SLACK_WEBHOOK }}
 
   # Deploy to Production
   deploy-production:
@@ -260,11 +260,11 @@ jobs:
 
       - name: Notify deployment status
         uses: 8398a7/action-slack@v3
-        if: always()
+        if: always() && secrets.SLACK_WEBHOOK != ''
         with:
           status: ${{ job.status }}
           channel: '#deployments'
-          webhook_url: ${{ secrets.SLACK_WEBHOOK }}
+          webhook: ${{ secrets.SLACK_WEBHOOK }}
 
   # Database Migrations
   run-migrations:

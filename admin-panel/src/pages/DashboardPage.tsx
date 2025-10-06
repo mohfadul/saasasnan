@@ -1,7 +1,19 @@
 import React from 'react';
 import { useQuery } from '@tanstack/react-query';
+import { Users, Calendar, DollarSign, TrendingUp, Clock, CheckCircle2 } from "lucide-react";
+import { MetricCard } from '../components/MetricCard';
+import { Card, CardContent, CardHeader, CardTitle } from '../components/ui/card';
+import { Button } from '../components/ui/button';
+import { Badge } from '../components/ui/badge';
 import { PatientTable } from '../components/patients/PatientTable';
 import { patientsApi, appointmentsApi } from '../services/api';
+
+const recentAppointments = [
+  { id: 1, patient: "John Smith", time: "9:00 AM", type: "Check-up", status: "confirmed" },
+  { id: 2, patient: "Sarah Johnson", time: "10:30 AM", type: "Cleaning", status: "confirmed" },
+  { id: 3, patient: "Mike Wilson", time: "2:00 PM", type: "Consultation", status: "pending" },
+  { id: 4, patient: "Emma Davis", time: "3:30 PM", type: "Follow-up", status: "confirmed" },
+];
 
 export const DashboardPage: React.FC = () => {
   const { data: patientStats, isLoading: patientStatsLoading } = useQuery({
@@ -15,160 +27,169 @@ export const DashboardPage: React.FC = () => {
   });
 
   return (
-    <div className="space-y-6">
-      {/* Page Header */}
-      <div className="md:flex md:items-center md:justify-between">
-        <div className="flex-1 min-w-0">
-          <h2 className="text-2xl font-bold leading-7 text-gray-900 sm:text-3xl sm:truncate">
-            Dashboard
-          </h2>
-          <p className="mt-1 text-sm text-gray-500">
-            Welcome to your healthcare platform dashboard
-          </p>
-        </div>
+    <div className="space-y-6 animate-in fade-in duration-500">
+      <div>
+        <h1 className="text-3xl font-bold tracking-tight">Dashboard</h1>
+        <p className="text-muted-foreground mt-1">Welcome back! Here's what's happening today.</p>
       </div>
 
-      {/* Stats Cards */}
-      <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-4">
-        {/* Total Patients */}
-        <div className="bg-white overflow-hidden shadow rounded-lg">
-          <div className="p-5">
-            <div className="flex items-center">
-              <div className="flex-shrink-0">
-                <svg
-                  className="h-6 w-6 text-gray-400"
-                  fill="none"
-                  stroke="currentColor"
-                  viewBox="0 0 24 24"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197m13.5-9a2.5 2.5 0 11-5 0 2.5 2.5 0 015 0z"
-                  />
-                </svg>
-              </div>
-              <div className="ml-5 w-0 flex-1">
-                <dl>
-                  <dt className="text-sm font-medium text-gray-500 truncate">
-                    Total Patients
-                  </dt>
-                  <dd className="text-lg font-medium text-gray-900">
-                    {patientStatsLoading ? '...' : patientStats?.totalPatients || 0}
-                  </dd>
-                </dl>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        {/* Recent Patients */}
-        <div className="bg-white overflow-hidden shadow rounded-lg">
-          <div className="p-5">
-            <div className="flex items-center">
-              <div className="flex-shrink-0">
-                <svg
-                  className="h-6 w-6 text-gray-400"
-                  fill="none"
-                  stroke="currentColor"
-                  viewBox="0 0 24 24"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z"
-                  />
-                </svg>
-              </div>
-              <div className="ml-5 w-0 flex-1">
-                <dl>
-                  <dt className="text-sm font-medium text-gray-500 truncate">
-                    New This Month
-                  </dt>
-                  <dd className="text-lg font-medium text-gray-900">
-                    {patientStatsLoading ? '...' : patientStats?.recentPatients || 0}
-                  </dd>
-                </dl>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        {/* Total Appointments */}
-        <div className="bg-white overflow-hidden shadow rounded-lg">
-          <div className="p-5">
-            <div className="flex items-center">
-              <div className="flex-shrink-0">
-                <svg
-                  className="h-6 w-6 text-gray-400"
-                  fill="none"
-                  stroke="currentColor"
-                  viewBox="0 0 24 24"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"
-                  />
-                </svg>
-              </div>
-              <div className="ml-5 w-0 flex-1">
-                <dl>
-                  <dt className="text-sm font-medium text-gray-500 truncate">
-                    Total Appointments
-                  </dt>
-                  <dd className="text-lg font-medium text-gray-900">
-                    {appointmentStatsLoading ? '...' : appointmentStats?.total || 0}
-                  </dd>
-                </dl>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        {/* Completion Rate */}
-        <div className="bg-white overflow-hidden shadow rounded-lg">
-          <div className="p-5">
-            <div className="flex items-center">
-              <div className="flex-shrink-0">
-                <svg
-                  className="h-6 w-6 text-gray-400"
-                  fill="none"
-                  stroke="currentColor"
-                  viewBox="0 0 24 24"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"
-                  />
-                </svg>
-              </div>
-              <div className="ml-5 w-0 flex-1">
-                <dl>
-                  <dt className="text-sm font-medium text-gray-500 truncate">
-                    Completion Rate
-                  </dt>
-                  <dd className="text-lg font-medium text-gray-900">
-                    {appointmentStatsLoading 
-                      ? '...' 
-                      : `${Math.round((appointmentStats?.completedRate || 0) * 100)}%`
-                    }
-                  </dd>
-                </dl>
-              </div>
-            </div>
-          </div>
-        </div>
+      {/* Metrics Grid */}
+      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+        <MetricCard
+          title="Total Patients"
+          value={patientStatsLoading ? '...' : patientStats?.totalPatients || 0}
+          icon={Users}
+          trend={{ value: "12% from last month", positive: true }}
+        />
+        <MetricCard
+          title="Today's Appointments"
+          value={appointmentStatsLoading ? '...' : appointmentStats?.total || 0}
+          icon={Calendar}
+          trend={{ value: "3 pending", positive: false }}
+        />
+        <MetricCard
+          title="Monthly Revenue"
+          value="$48,392"
+          icon={DollarSign}
+          trend={{ value: "18% from last month", positive: true }}
+        />
+        <MetricCard
+          title="Patient Satisfaction"
+          value="98.5%"
+          icon={TrendingUp}
+          trend={{ value: "2.1% from last month", positive: true }}
+        />
       </div>
+
+      <div className="grid gap-6 lg:grid-cols-2">
+        {/* Recent Appointments */}
+        <Card className="hover:shadow-lg transition-all duration-300">
+          <CardHeader>
+            <CardTitle className="flex items-center justify-between">
+              <span>Today's Schedule</span>
+              <Button size="sm" variant="outline">View All</Button>
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="space-y-4">
+              {recentAppointments.map((appointment) => (
+                <div
+                  key={appointment.id}
+                  className="flex items-center justify-between p-4 rounded-lg border border-border hover:bg-muted/50 transition-colors"
+                >
+                  <div className="flex items-center gap-4">
+                    <div className="flex items-center justify-center w-10 h-10 rounded-full bg-primary/10">
+                      <Clock className="h-5 w-5 text-primary" />
+                    </div>
+                    <div>
+                      <p className="font-medium">{appointment.patient}</p>
+                      <p className="text-sm text-muted-foreground">{appointment.type}</p>
+                    </div>
+                  </div>
+                  <div className="text-right">
+                    <p className="text-sm font-medium">{appointment.time}</p>
+                    <Badge
+                      variant={appointment.status === "confirmed" ? "default" : "secondary"}
+                      className="mt-1"
+                    >
+                      {appointment.status === "confirmed" ? (
+                        <CheckCircle2 className="h-3 w-3 mr-1" />
+                      ) : null}
+                      {appointment.status}
+                    </Badge>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* Quick Actions */}
+        <Card className="hover:shadow-lg transition-all duration-300">
+          <CardHeader>
+            <CardTitle>Quick Actions</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="grid gap-3">
+              <Button className="w-full justify-start h-auto py-4 bg-gradient-primary hover:opacity-90 transition-opacity shadow-md">
+                <Calendar className="mr-2 h-5 w-5" />
+                <div className="text-left">
+                  <div className="font-semibold">Schedule Appointment</div>
+                  <div className="text-xs opacity-90">Book a new patient visit</div>
+                </div>
+              </Button>
+              
+              <Button variant="outline" className="w-full justify-start h-auto py-4 hover:bg-muted/50">
+                <Users className="mr-2 h-5 w-5" />
+                <div className="text-left">
+                  <div className="font-semibold">Add New Patient</div>
+                  <div className="text-xs text-muted-foreground">Register a new patient</div>
+                </div>
+              </Button>
+              
+              <Button variant="outline" className="w-full justify-start h-auto py-4 hover:bg-muted/50">
+                <TrendingUp className="mr-2 h-5 w-5" />
+                <div className="text-left">
+                  <div className="font-semibold">View Reports</div>
+                  <div className="text-xs text-muted-foreground">Access analytics and insights</div>
+                </div>
+              </Button>
+              
+              <Button variant="outline" className="w-full justify-start h-auto py-4 hover:bg-muted/50">
+                <DollarSign className="mr-2 h-5 w-5" />
+                <div className="text-left">
+                  <div className="font-semibold">Process Payment</div>
+                  <div className="text-xs text-muted-foreground">Handle billing and invoices</div>
+                </div>
+              </Button>
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+
+      {/* Performance Overview */}
+      <Card className="hover:shadow-lg transition-all duration-300">
+        <CardHeader>
+          <CardTitle>Performance Overview</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="grid gap-6 md:grid-cols-3">
+            <div className="space-y-2">
+              <div className="flex items-center justify-between">
+                <span className="text-sm font-medium">Appointment Rate</span>
+                <span className="text-sm font-bold text-success">94%</span>
+              </div>
+              <div className="h-2 bg-muted rounded-full overflow-hidden">
+                <div className="h-full bg-gradient-primary w-[94%] rounded-full"></div>
+              </div>
+            </div>
+            
+            <div className="space-y-2">
+              <div className="flex items-center justify-between">
+                <span className="text-sm font-medium">Patient Retention</span>
+                <span className="text-sm font-bold text-success">87%</span>
+              </div>
+              <div className="h-2 bg-muted rounded-full overflow-hidden">
+                <div className="h-full bg-gradient-primary w-[87%] rounded-full"></div>
+              </div>
+            </div>
+            
+            <div className="space-y-2">
+              <div className="flex items-center justify-between">
+                <span className="text-sm font-medium">Treatment Completion</span>
+                <span className="text-sm font-bold text-success">91%</span>
+              </div>
+              <div className="h-2 bg-muted rounded-full overflow-hidden">
+                <div className="h-full bg-gradient-primary w-[91%] rounded-full"></div>
+              </div>
+            </div>
+          </div>
+        </CardContent>
+      </Card>
 
       {/* Recent Patients */}
       <div>
-        <h3 className="text-lg font-medium text-gray-900 mb-4">Recent Patients</h3>
+        <h3 className="text-lg font-medium text-foreground mb-4">Recent Patients</h3>
         <PatientTable />
       </div>
     </div>

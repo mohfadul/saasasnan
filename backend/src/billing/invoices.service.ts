@@ -127,7 +127,7 @@ export class InvoicesService {
       })
     );
 
-    await this.invoiceItemsRepository.save(items);
+    await this.invoiceItemsRepository.save(items.flat());
 
     return await this.findOne(savedInvoice.id, tenantId);
   }

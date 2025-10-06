@@ -1,6 +1,6 @@
 import { Entity, Column, ManyToOne, JoinColumn, OneToMany } from 'typeorm';
 import { BaseEntity } from '../../common/entities/base.entity';
-import { Product } from '../marketplace/entities/product.entity';
+import { Product } from '../../marketplace/entities/product.entity';
 
 export enum InventoryStatus {
   ACTIVE = 'active',
@@ -62,6 +62,6 @@ export class Inventory extends BaseEntity {
   @JoinColumn({ name: 'product_id' })
   product: Product;
 
-  @OneToMany(() => InventoryTransaction, transaction => transaction.inventory)
-  transactions: InventoryTransaction[];
+  @OneToMany('InventoryTransaction', 'inventory')
+  transactions: any[];
 }

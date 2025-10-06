@@ -1,6 +1,6 @@
 import { Entity, Column, PrimaryGeneratedColumn, ManyToOne, JoinColumn } from 'typeorm';
-import { BaseEntity } from '../common/entities/base.entity';
-import { Tenant } from '../tenants/entities/tenant.entity';
+import { BaseEntity } from '../../common/entities/base.entity';
+import { Tenant } from '../../tenants/entities/tenant.entity';
 
 export enum AlertStatus {
   ACTIVE = 'active',

@@ -102,7 +102,7 @@ export class OrdersService {
       })
     );
 
-    await this.orderItemsRepository.save(items);
+    await this.orderItemsRepository.save(items.flat());
 
     return await this.findOne(savedOrder.id, tenantId);
   }

@@ -9,6 +9,7 @@ import { Patient } from '../patients/entities/patient.entity';
 import { User } from '../auth/entities/user.entity';
 import { ClinicalNote } from '../clinical/entities/clinical-note.entity';
 import { TreatmentPlan } from '../clinical/entities/treatment-plan.entity';
+import { CacheService } from '../common/services/cache.service';
 
 export interface AnalyticsFilter {
   tenant_id: string;
@@ -50,10 +51,19 @@ export class AnalyticsService {
     private clinicalNoteRepository: Repository<ClinicalNote>,
     @InjectRepository(TreatmentPlan)
     private treatmentPlanRepository: Repository<TreatmentPlan>,
+    private cacheService: CacheService,
   ) {}
 
   // Dashboard Overview Metrics
   async getDashboardOverview(filters: AnalyticsFilter): Promise<Record<string, MetricResult>> {
+    const cacheKey = CacheService.getDashboardKey(filters.tenant_id, filters);
+    
+    // Try to get from cache first
+    const cachedMetrics = await this.cacheService.get<Record<string, MetricResult>>(cacheKey);
+    if (cachedMetrics) {
+      return cachedMetrics;
+    }
+
     const metrics: Record<string, MetricResult> = {};
 
     // Parallel execution for better performance
@@ -85,6 +95,9 @@ export class AnalyticsService {
     metrics.pending_invoices = pendingInvoices;
     metrics.total_clinical_notes = totalClinicalNotes;
     metrics.active_treatment_plans = activeTreatmentPlans;
+
+    // Cache the result for 5 minutes
+    await this.cacheService.set(cacheKey, metrics, 300);
 
     return metrics;
   }

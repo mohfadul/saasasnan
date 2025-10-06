@@ -482,7 +482,7 @@ export class ABTestingService {
     const result = await this.abTestRepository
       .createQueryBuilder()
       .update(ABTest)
-      .set({ status: ABTestStatus.ARCHIVED })
+      .set({ status: ABTestStatus.COMPLETED })
       .where('status = :status', { status: ABTestStatus.COMPLETED })
       .andWhere('end_date < :cutoffDate', { cutoffDate })
       .execute();

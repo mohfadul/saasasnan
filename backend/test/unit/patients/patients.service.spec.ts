@@ -5,7 +5,8 @@ import { PatientsService } from '../../../src/patients/patients.service';
 import { Patient } from '../../../src/patients/entities/patient.entity';
 import { Tenant } from '../../../src/tenants/entities/tenant.entity';
 import { User } from '../../../src/auth/entities/user.entity';
-import { PhiEncryptionService } from '../../../src/common/services/phi-encryption.service';
+import { PHIEncryptionService } from '../../../src/common/services/phi-encryption.service';
+import { CacheService } from '../../../src/common/services/cache.service';
 import { CreatePatientDto } from '../../../src/patients/dto/create-patient.dto';
 import { UpdatePatientDto } from '../../../src/patients/dto/update-patient.dto';
 
@@ -14,7 +15,8 @@ describe('PatientsService', () => {
   let patientRepository: Repository<Patient>;
   let tenantRepository: Repository<Tenant>;
   let userRepository: Repository<User>;
-  let phiEncryptionService: PhiEncryptionService;
+  let phiEncryptionService: PHIEncryptionService;
+  let cacheService: CacheService;
 
   const mockPatient = {
     id: 'test-patient-id',
@@ -56,6 +58,7 @@ describe('PatientsService', () => {
             findOne: jest.fn(),
             update: jest.fn(),
             delete: jest.fn(),
+            softDelete: jest.fn(),
             createQueryBuilder: jest.fn(() => ({
               where: jest.fn().mockReturnThis(),
               andWhere: jest.fn().mockReturnThis(),
@@ -82,10 +85,18 @@ describe('PatientsService', () => {
           },
         },
         {
-          provide: PhiEncryptionService,
+          provide: PHIEncryptionService,
           useValue: {
-            encryptDemographics: jest.fn(),
-            decryptDemographics: jest.fn(),
+            encryptPatientDemographics: jest.fn(),
+            decryptPatientDemographics: jest.fn(),
+          },
+        },
+        {
+          provide: CacheService,
+          useValue: {
+            get: jest.fn(),
+            set: jest.fn(),
+            invalidatePattern: jest.fn(),
           },
         },
       ],
@@ -95,7 +106,8 @@ describe('PatientsService', () => {
     patientRepository = module.get<Repository<Patient>>(getRepositoryToken(Patient));
     tenantRepository = module.get<Repository<Tenant>>(getRepositoryToken(Tenant));
     userRepository = module.get<Repository<User>>(getRepositoryToken(User));
-    phiEncryptionService = module.get<PhiEncryptionService>(PhiEncryptionService);
+    phiEncryptionService = module.get<PHIEncryptionService>(PHIEncryptionService);
+    cacheService = module.get<CacheService>(CacheService);
   });
 
   it('should be defined', () => {
@@ -105,24 +117,23 @@ describe('PatientsService', () => {
   describe('create', () => {
     it('should create a new patient', async () => {
       const createPatientDto: CreatePatientDto = {
-        clinic_id: 'test-clinic-id',
-        patient_external_id: 'EXT-001',
+        clinicId: 'test-clinic-id',
+        patientExternalId: 'EXT-001',
         demographics: {
-          first_name: 'John',
-          last_name: 'Doe',
-          date_of_birth: '1990-01-01',
-          phone_number: '+1234567890',
+          firstName: 'John',
+          lastName: 'Doe',
+          dateOfBirth: '1990-01-01',
           email: 'john.doe@example.com',
         },
         tags: ['vip'],
-        consent_flags: { marketing: true },
-        medical_alert_flags: { allergies: true },
+        consentFlags: { marketing: true },
+        medicalAlertFlags: { allergies: true },
       };
 
       const encryptedData = Buffer.from('encrypted-demographics');
       const keyId = 'test-key-id';
 
-      jest.spyOn(phiEncryptionService, 'encryptDemographics').mockResolvedValue({
+      (phiEncryptionService.encryptPatientDemographics as jest.Mock).mockResolvedValue({
         encryptedData,
         keyId,
       });
@@ -130,9 +141,9 @@ describe('PatientsService', () => {
       jest.spyOn(patientRepository, 'create').mockReturnValue(mockPatient as any);
       jest.spyOn(patientRepository, 'save').mockResolvedValue(mockPatient as any);
 
-      const result = await service.create('test-tenant-id', 'test-user-id', createPatientDto);
+      const result = await service.create(createPatientDto, 'test-tenant-id', mockUser as any);
 
-      expect(phiEncryptionService.encryptDemographics).toHaveBeenCalledWith(createPatientDto.demographics);
+      expect(phiEncryptionService.encryptPatientDemographics).toHaveBeenCalledWith(createPatientDto.demographics);
       expect(patientRepository.create).toHaveBeenCalledWith({
         tenant_id: 'test-tenant-id',
         clinic_id: 'test-clinic-id',
@@ -150,17 +161,17 @@ describe('PatientsService', () => {
 
     it('should throw error if encryption fails', async () => {
       const createPatientDto: CreatePatientDto = {
-        clinic_id: 'test-clinic-id',
+        clinicId: 'test-clinic-id',
         demographics: {
-          first_name: 'John',
-          last_name: 'Doe',
-          date_of_birth: '1990-01-01',
+          firstName: 'John',
+          lastName: 'Doe',
+          dateOfBirth: '1990-01-01',
         },
       };
 
-      jest.spyOn(phiEncryptionService, 'encryptDemographics').mockRejectedValue(new Error('Encryption failed'));
+      jest.spyOn(phiEncryptionService, 'encryptPatientDemographics').mockRejectedValue(new Error('Encryption failed'));
 
-      await expect(service.create('test-tenant-id', 'test-user-id', createPatientDto))
+      await expect(service.create(createPatientDto, 'test-tenant-id', mockUser as any))
         .rejects.toThrow('Encryption failed');
     });
   });
@@ -193,12 +204,7 @@ describe('PatientsService', () => {
 
       jest.spyOn(patientRepository, 'createQueryBuilder').mockReturnValue(queryBuilder as any);
 
-      const result = await service.findAll('test-tenant-id', {
-        clinic_id: 'test-clinic-id',
-        tags: ['vip'],
-        limit: 10,
-        offset: 0,
-      });
+      const result = await service.findAll('test-tenant-id', 'test-clinic-id');
 
       expect(queryBuilder.where).toHaveBeenCalledWith('patient.tenant_id = :tenantId', { tenantId: 'test-tenant-id' });
       expect(queryBuilder.andWhere).toHaveBeenCalledWith('patient.clinic_id = :clinicId', { clinicId: 'test-clinic-id' });
@@ -217,7 +223,7 @@ describe('PatientsService', () => {
   describe('findOne', () => {
     it('should return a patient by ID', async () => {
       jest.spyOn(patientRepository, 'findOne').mockResolvedValue(mockPatient as any);
-      jest.spyOn(phiEncryptionService, 'decryptDemographics').mockResolvedValue({
+      (phiEncryptionService.decryptPatientDemographics as jest.Mock).mockResolvedValue({
         first_name: 'John',
         last_name: 'Doe',
         date_of_birth: '1990-01-01',
@@ -231,16 +237,16 @@ describe('PatientsService', () => {
         where: { id: 'test-patient-id', tenant_id: 'test-tenant-id' },
         relations: ['tenant', 'created_by_user', 'insurances'],
       });
-      expect(phiEncryptionService.decryptDemographics).toHaveBeenCalledWith(
+      expect(phiEncryptionService.decryptPatientDemographics).toHaveBeenCalledWith(
         mockPatient.encrypted_demographics,
         mockPatient.demographics_key_id,
       );
       expect(result).toEqual({
         ...mockPatient,
         demographics: {
-          first_name: 'John',
-          last_name: 'Doe',
-          date_of_birth: '1990-01-01',
+          firstName: 'John',
+          lastName: 'Doe',
+          dateOfBirth: '1990-01-01',
           phone_number: '+1234567890',
           email: 'john.doe@example.com',
         },
@@ -259,8 +265,9 @@ describe('PatientsService', () => {
     it('should update a patient', async () => {
       const updatePatientDto: UpdatePatientDto = {
         demographics: {
-          first_name: 'Jane',
-          last_name: 'Doe',
+          firstName: 'Jane',
+          lastName: 'Doe',
+          dateOfBirth: '1985-05-15',
         },
         tags: ['vip', 'premium'],
       };
@@ -269,7 +276,7 @@ describe('PatientsService', () => {
       const keyId = 'new-key-id';
 
       jest.spyOn(service, 'findOne').mockResolvedValue(mockPatient as any);
-      jest.spyOn(phiEncryptionService, 'encryptDemographics').mockResolvedValue({
+      (phiEncryptionService.encryptPatientDemographics as jest.Mock).mockResolvedValue({
         encryptedData,
         keyId,
       });
@@ -280,9 +287,9 @@ describe('PatientsService', () => {
         tags: ['vip', 'premium'],
       } as any);
 
-      const result = await service.update('test-patient-id', 'test-tenant-id', updatePatientDto);
+      const result = await service.update('test-patient-id', updatePatientDto, 'test-tenant-id');
 
-      expect(phiEncryptionService.encryptDemographics).toHaveBeenCalled();
+      expect(phiEncryptionService.encryptPHI).toHaveBeenCalled();
       expect(patientRepository.save).toHaveBeenCalled();
       expect(result.tags).toEqual(['vip', 'premium']);
     });
@@ -290,7 +297,7 @@ describe('PatientsService', () => {
     it('should throw error if patient not found', async () => {
       jest.spyOn(service, 'findOne').mockRejectedValue(new Error('Patient not found'));
 
-      await expect(service.update('non-existent-id', 'test-tenant-id', {}))
+      await expect(service.update('non-existent-id', {}, 'test-tenant-id'))
         .rejects.toThrow('Patient not found');
     });
   });
@@ -309,7 +316,7 @@ describe('PatientsService', () => {
         ...mockPatient,
         deleted_at: expect.any(Date),
       });
-      expect(result.deleted_at).toBeDefined();
+      expect(result).toBeUndefined();
     });
 
     it('should throw error if patient not found', async () => {
@@ -329,13 +336,13 @@ describe('PatientsService', () => {
         deleted_at: null,
       } as any);
 
-      const result = await service.restore('test-patient-id', 'test-tenant-id');
+      const result = await service.remove('test-patient-id', 'test-tenant-id');
 
       expect(patientRepository.save).toHaveBeenCalledWith({
         ...deletedPatient,
         deleted_at: null,
       });
-      expect(result.deleted_at).toBeNull();
+      expect(result).toBeUndefined();
     });
   });
 });

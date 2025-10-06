@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { Patient } from '../../types';
 import { patientsApi } from '../../services/api';
@@ -16,21 +16,26 @@ export const PatientTable: React.FC<PatientTableProps> = ({ clinicId }) => {
   const { data: patients, isLoading, error } = useQuery({
     queryKey: ['patients', clinicId],
     queryFn: () => patientsApi.getPatients(clinicId),
+    staleTime: 5 * 60 * 1000, // 5 minutes
+    cacheTime: 10 * 60 * 1000, // 10 minutes
   });
 
-  const filteredPatients = patients?.filter((patient) => {
-    if (!searchTerm) return true;
+  // Memoized filtering for better performance
+  const filteredPatients = useMemo(() => {
+    if (!patients || !searchTerm) return patients;
     
     const searchLower = searchTerm.toLowerCase();
-    const { firstName, lastName, email, phone } = patient.demographics;
-    
-    return (
-      firstName.toLowerCase().includes(searchLower) ||
-      lastName.toLowerCase().includes(searchLower) ||
-      email?.toLowerCase().includes(searchLower) ||
-      phone?.includes(searchTerm)
-    );
-  });
+    return patients.filter((patient) => {
+      const { firstName, lastName, email, phone } = patient.demographics;
+      
+      return (
+        firstName.toLowerCase().includes(searchLower) ||
+        lastName.toLowerCase().includes(searchLower) ||
+        email?.toLowerCase().includes(searchLower) ||
+        phone?.includes(searchTerm)
+      );
+    });
+  }, [patients, searchTerm]);
 
   const paginatedPatients = filteredPatients?.slice(
     (currentPage - 1) * pageSize,

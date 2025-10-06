@@ -10,10 +10,12 @@ import {
   UseGuards,
   HttpCode,
   HttpStatus,
+  Request,
 } from '@nestjs/common';
 import { ApiTags, ApiOperation, ApiResponse, ApiBearerAuth } from '@nestjs/swagger';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard';
 import { TenantGuard } from '../tenants/tenant.guard';
+import { User } from '../auth/entities/user.entity';
 import { FeatureFlagsService, FeatureFlagEvaluationRequest } from './feature-flags.service';
 import { ABTestingService, ABTestCreationRequest, ConversionEvent } from './ab-testing.service';
 import { FeatureFlag, FeatureFlagType, FeatureFlagStatus, FeatureFlagRolloutStrategy } from './entities/feature-flag.entity';
@@ -34,6 +36,7 @@ export class FeaturesController {
   @ApiOperation({ summary: 'Create a new feature flag' })
   @ApiResponse({ status: 201, description: 'Feature flag created successfully' })
   async createFeatureFlag(
+    @Request() req: { user: User },
     @Body() createFlagDto: {
       key: string;
       name: string;
@@ -49,7 +52,7 @@ export class FeaturesController {
     },
   ): Promise<FeatureFlag> {
     return await this.featureFlagsService.createFeatureFlag(
-      createFlagDto.tenant_id, // This would come from the tenant guard
+      req.user.tenant_id, // This would come from the tenant guard
       createFlagDto,
     );
   }

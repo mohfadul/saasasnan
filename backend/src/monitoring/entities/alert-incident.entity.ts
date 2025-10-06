@@ -1,5 +1,5 @@
 import { Entity, Column, PrimaryGeneratedColumn, ManyToOne, JoinColumn } from 'typeorm';
-import { BaseEntity } from '../common/entities/base.entity';
+import { BaseEntity } from '../../common/entities/base.entity';
 import { Alert } from './alert.entity';
 
 export enum IncidentStatus {

@@ -5,6 +5,7 @@ import { JwtService } from '@nestjs/jwt';
 import * as bcrypt from 'bcrypt';
 import { User, UserRole } from './entities/user.entity';
 import { TenantsService } from '../tenants/tenants.service';
+import { CacheService } from '../common/services/cache.service';
 
 export interface LoginDto {
   email: string;
@@ -27,6 +28,7 @@ export class AuthService {
     private usersRepository: Repository<User>,
     private jwtService: JwtService,
     private tenantsService: TenantsService,
+    private cacheService: CacheService,
   ) {}
 
   async validateUser(email: string, password: string, tenantId?: string): Promise<User | null> {
@@ -139,5 +141,87 @@ export class AuthService {
       where: { id, tenant_id: tenantId },
       relations: ['tenant'],
     });
+  }
+
+  async refreshToken(refreshToken: string): Promise<{ access_token: string; refresh_token: string }> {
+    try {
+      // Verify the refresh token
+      const payload = this.jwtService.verify(refreshToken, {
+        secret: process.env.JWT_REFRESH_SECRET || 'refresh-secret',
+      });
+
+      // Check if refresh token is blacklisted
+      const isBlacklisted = await this.cacheService.get(`blacklist:${refreshToken}`);
+      if (isBlacklisted) {
+        throw new UnauthorizedException('Token has been revoked');
+      }
+
+      // Get user from database
+      const user = await this.usersRepository.findOne({
+        where: { id: payload.sub },
+        relations: ['tenant'],
+      });
+
+      if (!user) {
+        throw new UnauthorizedException('User not found');
+      }
+
+      // Generate new tokens
+      const newPayload: JwtPayload = {
+        sub: user.id,
+        email: user.email,
+        role: user.role,
+        tenantId: user.tenant_id,
+        clinicId: user.clinic_id,
+      };
+
+      const accessToken = this.jwtService.sign(newPayload, {
+        expiresIn: process.env.JWT_EXPIRES_IN || '1h',
+      });
+
+      const newRefreshToken = this.jwtService.sign(
+        { sub: user.id, type: 'refresh' },
+        {
+          expiresIn: process.env.JWT_REFRESH_EXPIRES_IN || '7d',
+          secret: process.env.JWT_REFRESH_SECRET || 'refresh-secret',
+        }
+      );
+
+      // Blacklist the old refresh token
+      const refreshTokenExpiry = Math.floor(Date.now() / 1000) + (7 * 24 * 60 * 60); // 7 days
+      await this.cacheService.set(`blacklist:${refreshToken}`, true, refreshTokenExpiry);
+
+      // Store new refresh token
+      await this.cacheService.set(`refresh:${user.id}`, newRefreshToken, 7 * 24 * 60 * 60);
+
+      return {
+        access_token: accessToken,
+        refresh_token: newRefreshToken,
+      };
+    } catch (error) {
+      throw new UnauthorizedException('Invalid refresh token');
+    }
+  }
+
+  async logout(refreshToken: string): Promise<void> {
+    try {
+      const payload = this.jwtService.verify(refreshToken, {
+        secret: process.env.JWT_REFRESH_SECRET || 'refresh-secret',
+      });
+
+      // Blacklist the refresh token
+      const tokenExpiry = Math.floor(Date.now() / 1000) + (7 * 24 * 60 * 60);
+      await this.cacheService.set(`blacklist:${refreshToken}`, true, tokenExpiry);
+
+      // Remove from active refresh tokens
+      await this.cacheService.del(`refresh:${payload.sub}`);
+    } catch (error) {
+      // Ignore errors during logout
+    }
+  }
+
+  async revokeAllTokens(userId: string): Promise<void> {
+    // Remove all refresh tokens for the user
+    await this.cacheService.del(`refresh:${userId}`);
   }
 }

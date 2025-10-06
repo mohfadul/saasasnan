@@ -1,6 +1,6 @@
 import { Injectable, NotFoundException, BadRequestException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository, Between, In, LessThan, MoreThan } from 'typeorm';
+import { Repository, Between, In, LessThan, MoreThan, Not } from 'typeorm';
 import { Appointment, AppointmentStatus } from './entities/appointment.entity';
 import { AppointmentRecurrence, RecurrenceType, RecurrenceEndType } from './entities/appointment-recurrence.entity';
 import { AppointmentWaitlist, WaitlistStatus } from './entities/appointment-waitlist.entity';
