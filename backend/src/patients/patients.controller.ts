@@ -46,7 +46,7 @@ export class PatientsController {
     @Request() req: { user: User },
     @Query('clinicId') clinicId?: string,
   ) {
-    return this.patientsService.findAll(req.user.tenant_id, clinicId);
+    return this.patientsService.findAll(req.user.tenant_id, clinicId, req.user);
   }
 
   @Get('search')
@@ -61,7 +61,7 @@ export class PatientsController {
     @Query('q') searchTerm: string,
     @Query('clinicId') clinicId?: string,
   ) {
-    return this.patientsService.searchPatients(req.user.tenant_id, searchTerm, clinicId);
+    return this.patientsService.searchPatients(req.user.tenant_id, searchTerm, clinicId, req.user);
   }
 
   @Get('stats')
@@ -84,7 +84,7 @@ export class PatientsController {
   @ApiResponse({ status: 200, description: 'Patient retrieved successfully' })
   @ApiResponse({ status: 404, description: 'Patient not found' })
   findOne(@Param('id') id: string, @Request() req: { user: User}) {
-    return this.patientsService.findOne(id, req.user.tenant_id);
+    return this.patientsService.findOne(id, req.user.tenant_id, req.user);
   }
 
   @Patch(':id')

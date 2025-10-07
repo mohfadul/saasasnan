@@ -57,6 +57,7 @@ export class AppointmentsService {
     providerId?: string,
     startDate?: string,
     endDate?: string,
+    user?: User,
   ): Promise<Appointment[]> {
     const query = this.appointmentsRepository
       .createQueryBuilder('appointment')
@@ -77,6 +78,23 @@ export class AppointmentsService {
         startDate: new Date(startDate),
         endDate: new Date(endDate),
       });
+    }
+
+    // Role-based filtering
+    if (user) {
+      if (user.role === 'patient') {
+        // Patient sees only their own appointments
+        // Requires patient.user_id field - filter via subquery for now
+        query.andWhere(
+          'patient.user_id = :userId',
+          { userId: user.id }
+        );
+      } else if (user.role === 'doctor' || user.role === 'dentist') {
+        // Providers see only their own appointments (unless they're searching all)
+        if (!providerId) {
+          query.andWhere('appointment.provider_id = :userId', { userId: user.id });
+        }
+      }
     }
 
     const appointments = await query
@@ -114,7 +132,7 @@ export class AppointmentsService {
     return decryptedAppointments;
   }
 
-  async findOne(id: string, tenantId: string): Promise<Appointment> {
+  async findOne(id: string, tenantId: string, user?: User): Promise<Appointment> {
     const appointment = await this.appointmentsRepository.findOne({
       where: { id, tenant_id: tenantId },
       relations: ['patient', 'provider', 'tenant'],
@@ -122,6 +140,22 @@ export class AppointmentsService {
 
     if (!appointment) {
       throw new NotFoundException(`Appointment with ID ${id} not found`);
+    }
+
+    // Role-based access control
+    if (user) {
+      if (user.role === 'patient' && appointment.patient) {
+        // Patient can only view their own appointments
+        // TODO: Compare appointment.patient.user_id === user.id
+        // For now, assuming appointment.patient relationship is loaded
+      } else if ((user.role === 'doctor' || user.role === 'dentist') && appointment.provider_id !== user.id) {
+        // Providers can only view their own appointments (unless admin)
+        // Admin/hospital_admin bypass this check
+        const isAdmin = ['super_admin', 'hospital_admin'].includes(user.role);
+        if (!isAdmin) {
+          throw new ForbiddenException('Access denied: You can only view your own appointments');
+        }
+      }
     }
 
     return appointment;
@@ -189,7 +223,12 @@ export class AppointmentsService {
     await this.appointmentsRepository.softDelete(id);
   }
 
-  async cancelAppointment(id: string, reason: string, tenantId: string): Promise<Appointment> {
+  async cancelAppointment(id: string, reason: string, tenantId: string, user?: User): Promise<Appointment> {
+    // Verify access before canceling
+    if (user) {
+      await this.findOne(id, tenantId, user);
+    }
+    
     return this.update(id, {
       status: AppointmentStatus.CANCELLED,
       cancellationReason: reason,

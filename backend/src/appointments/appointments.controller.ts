@@ -58,6 +58,7 @@ export class AppointmentsController {
       providerId,
       startDate,
       endDate,
+      req.user,
     );
   }
 
@@ -104,7 +105,7 @@ export class AppointmentsController {
   @ApiResponse({ status: 200, description: 'Appointment retrieved successfully' })
   @ApiResponse({ status: 404, description: 'Appointment not found' })
   findOne(@Param('id') id: string, @Request() req: { user: User }) {
-    return this.appointmentsService.findOne(id, req.user.tenant_id);
+    return this.appointmentsService.findOne(id, req.user.tenant_id, req.user);
   }
 
   @Patch(':id')
@@ -132,7 +133,7 @@ export class AppointmentsController {
     @Body() body: { reason: string },
     @Request() req: { user: User },
   ) {
-    return this.appointmentsService.cancelAppointment(id, body.reason, req.user.tenant_id);
+    return this.appointmentsService.cancelAppointment(id, body.reason, req.user.tenant_id, req.user);
   }
 
   @Delete(':id')
