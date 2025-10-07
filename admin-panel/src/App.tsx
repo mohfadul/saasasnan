@@ -17,6 +17,7 @@ import AnalyticsPage from './pages/AnalyticsPage';
 import AIPage from './pages/AIPage';
 import { SettingsPage } from './pages/SettingsPage';
 import { PatientTable } from './components/patients/PatientTable';
+import { PharmacyPage } from './pages/PharmacyPage';
 
 // Create a client with optimized settings
 const queryClient = new QueryClient({
@@ -194,6 +195,17 @@ const AppRoutes: React.FC = () => {
                   <ProtectedRoute>
                     <DashboardLayout>
                       <AIPage />
+                    </DashboardLayout>
+                  </ProtectedRoute>
+                }
+              />
+
+              <Route
+                path="/pharmacy"
+                element={
+                  <ProtectedRoute>
+                    <DashboardLayout>
+                      <PharmacyPage />
                     </DashboardLayout>
                   </ProtectedRoute>
                 }
