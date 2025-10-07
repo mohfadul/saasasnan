@@ -16,6 +16,8 @@ import { AppointmentsService } from './appointments.service';
 import { CreateAppointmentDto } from './dto/create-appointment.dto';
 import { User } from '../auth/entities/user.entity';
 import { TenantGuard } from '../tenants/tenant.guard';
+import { RolesGuard } from '../auth/roles.guard';
+import { Roles } from '../auth/roles.decorator';
 
 @ApiTags('Appointments')
 @Controller('appointments')
@@ -25,6 +27,8 @@ export class AppointmentsController {
   constructor(private readonly appointmentsService: AppointmentsService) {}
 
   @Post()
+  @UseGuards(RolesGuard)
+  @Roles('super_admin', 'hospital_admin', 'doctor', 'dentist', 'staff', 'patient')
   @ApiOperation({ summary: 'Create a new appointment' })
   @ApiResponse({ status: 201, description: 'Appointment created successfully' })
   @ApiResponse({ status: 400, description: 'Bad request - appointment conflicts' })
@@ -33,6 +37,8 @@ export class AppointmentsController {
   }
 
   @Get()
+  @UseGuards(RolesGuard)
+  @Roles('super_admin', 'hospital_admin', 'doctor', 'dentist', 'staff', 'patient')
   @ApiOperation({ summary: 'Get all appointments' })
   @ApiQuery({ name: 'clinicId', required: false, description: 'Filter by clinic ID' })
   @ApiQuery({ name: 'providerId', required: false, description: 'Filter by provider ID' })
@@ -56,6 +62,8 @@ export class AppointmentsController {
   }
 
   @Get('schedule/:providerId')
+  @UseGuards(RolesGuard)
+  @Roles('super_admin', 'hospital_admin', 'doctor', 'dentist', 'staff')
   @ApiOperation({ summary: 'Get provider schedule for a specific date' })
   @ApiQuery({ name: 'date', required: true, description: 'Date in YYYY-MM-DD format' })
   @ApiResponse({ status: 200, description: 'Provider schedule retrieved successfully' })
@@ -68,6 +76,8 @@ export class AppointmentsController {
   }
 
   @Get('stats')
+  @UseGuards(RolesGuard)
+  @Roles('super_admin', 'hospital_admin')
   @ApiOperation({ summary: 'Get appointment statistics' })
   @ApiQuery({ name: 'clinicId', required: false, description: 'Filter by clinic ID' })
   @ApiQuery({ name: 'startDate', required: false, description: 'Filter by start date' })
@@ -88,6 +98,8 @@ export class AppointmentsController {
   }
 
   @Get(':id')
+  @UseGuards(RolesGuard)
+  @Roles('super_admin', 'hospital_admin', 'doctor', 'dentist', 'staff', 'patient')
   @ApiOperation({ summary: 'Get appointment by ID' })
   @ApiResponse({ status: 200, description: 'Appointment retrieved successfully' })
   @ApiResponse({ status: 404, description: 'Appointment not found' })
@@ -96,6 +108,8 @@ export class AppointmentsController {
   }
 
   @Patch(':id')
+  @UseGuards(RolesGuard)
+  @Roles('super_admin', 'hospital_admin', 'doctor', 'dentist', 'staff')
   @ApiOperation({ summary: 'Update appointment' })
   @ApiResponse({ status: 200, description: 'Appointment updated successfully' })
   @ApiResponse({ status: 404, description: 'Appointment not found' })
@@ -108,6 +122,8 @@ export class AppointmentsController {
   }
 
   @Patch(':id/cancel')
+  @UseGuards(RolesGuard)
+  @Roles('super_admin', 'hospital_admin', 'doctor', 'dentist', 'staff', 'patient')
   @ApiOperation({ summary: 'Cancel appointment' })
   @ApiResponse({ status: 200, description: 'Appointment cancelled successfully' })
   @ApiResponse({ status: 404, description: 'Appointment not found' })
@@ -120,6 +136,8 @@ export class AppointmentsController {
   }
 
   @Delete(':id')
+  @UseGuards(RolesGuard)
+  @Roles('super_admin', 'hospital_admin')
   @ApiOperation({ summary: 'Delete appointment' })
   @ApiResponse({ status: 200, description: 'Appointment deleted successfully' })
   @ApiResponse({ status: 404, description: 'Appointment not found' })
