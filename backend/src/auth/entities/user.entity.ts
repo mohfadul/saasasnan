@@ -5,8 +5,10 @@ import { Patient } from '../../patients/entities/patient.entity';
 
 export enum UserRole {
   SUPER_ADMIN = 'super_admin',
-  CLINIC_ADMIN = 'clinic_admin',
+  HOSPITAL_ADMIN = 'hospital_admin',  // Renamed from clinic_admin
   DENTIST = 'dentist',
+  DOCTOR = 'doctor',                  // New role
+  PHARMACIST = 'pharmacist',          // New role
   STAFF = 'staff',
   SUPPLIER = 'supplier',
   PATIENT = 'patient',

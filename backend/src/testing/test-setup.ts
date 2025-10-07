@@ -75,7 +75,7 @@ export async function seedTestData(dataSource: DataSource): Promise<any> {
   // Create test user
   const userResult = await dataSource.query(`
     INSERT INTO users (id, tenant_id, email, role, created_at, updated_at)
-    VALUES (gen_random_uuid(), $1, 'test@testclinic.com', 'clinic_admin', NOW(), NOW())
+    VALUES (gen_random_uuid(), $1, 'test@testclinic.com', 'hospital_admin', NOW(), NOW())
     RETURNING id, email, role
   `, [tenant.id]);
 

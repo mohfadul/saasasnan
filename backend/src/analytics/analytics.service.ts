@@ -251,7 +251,7 @@ export class AnalyticsService {
       .createQueryBuilder('user')
       .where('user.tenant_id = :tenant_id', { tenant_id: filters.tenant_id })
       .andWhere('user.role IN (:...roles)', { 
-        roles: ['dentist', 'clinic_admin'] 
+        roles: ['dentist', 'doctor', 'hospital_admin'] 
       });
 
     const count = await query.getCount();

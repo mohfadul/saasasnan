@@ -83,7 +83,7 @@ export class SudanPaymentsController {
    */
   @Get('admin/pending')
   @UseGuards(RolesGuard)
-  @Roles('super_admin', 'clinic_admin', 'finance_admin')
+  @Roles('super_admin', 'hospital_admin', 'finance_admin')
   async getPendingPayments(
     @Query() queryDto: PaymentQueryDto,
     @Request() req: any,
@@ -100,7 +100,7 @@ export class SudanPaymentsController {
    */
   @Post('admin/:id/confirm')
   @UseGuards(RolesGuard)
-  @Roles('super_admin', 'clinic_admin', 'finance_admin')
+  @Roles('super_admin', 'hospital_admin', 'finance_admin')
   @HttpCode(HttpStatus.OK)
   async confirmPayment(
     @Param('id') id: string,
@@ -110,7 +110,7 @@ export class SudanPaymentsController {
     @Headers('user-agent') userAgent: string,
   ): Promise<Payment> {
     // Check if user has FINANCE role
-    const allowedRoles = ['super_admin', 'clinic_admin', 'finance_admin'];
+    const allowedRoles = ['super_admin', 'hospital_admin', 'finance_admin'];
     if (!allowedRoles.includes(req.user.role)) {
       throw new ForbiddenException('Only finance administrators can confirm payments');
     }
@@ -131,7 +131,7 @@ export class SudanPaymentsController {
    */
   @Post('admin/:id/reject')
   @UseGuards(RolesGuard)
-  @Roles('super_admin', 'clinic_admin', 'finance_admin')
+  @Roles('super_admin', 'hospital_admin', 'finance_admin')
   @HttpCode(HttpStatus.OK)
   async rejectPayment(
     @Param('id') id: string,
@@ -141,7 +141,7 @@ export class SudanPaymentsController {
     @Headers('user-agent') userAgent: string,
   ): Promise<Payment> {
     // Check if user has FINANCE role
-    const allowedRoles = ['super_admin', 'clinic_admin', 'finance_admin'];
+    const allowedRoles = ['super_admin', 'hospital_admin', 'finance_admin'];
     if (!allowedRoles.includes(req.user.role)) {
       throw new ForbiddenException('Only finance administrators can reject payments');
     }

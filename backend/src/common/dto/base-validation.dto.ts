@@ -317,7 +317,7 @@ export class UserDto extends BaseValidationDto {
   last_name: string;
 
   @IsString()
-  @IsEnum(['super_admin', 'clinic_admin', 'dentist', 'staff', 'supplier', 'patient'])
+  @IsEnum(['super_admin', 'hospital_admin', 'dentist', 'doctor', 'pharmacist', 'staff', 'supplier', 'patient'])
   role: string;
 
   @IsOptional()
