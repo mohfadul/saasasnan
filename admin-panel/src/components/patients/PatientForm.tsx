@@ -17,9 +17,10 @@ export const PatientForm: React.FC<PatientFormProps> = ({ clinicId, patient, onS
   // Debug: Check if we have auth token
   React.useEffect(() => {
     const token = localStorage.getItem('access_token');
-    console.log('Auth token present:', !!token);
-    console.log('Clinic ID:', clinicId);
-    console.log('Edit Mode:', isEditMode);
+    // Check if user is authenticated
+    if (!token) {
+      console.warn('No auth token found');
+    }
   }, [clinicId, isEditMode]);
   
   const [formData, setFormData] = useState<CreatePatientRequest>({
@@ -113,8 +114,6 @@ export const PatientForm: React.FC<PatientFormProps> = ({ clinicId, patient, onS
       ...(formData.consentFlags && Object.keys(formData.consentFlags).length > 0 && { consentFlags: formData.consentFlags }),
       ...(formData.medicalAlertFlags && Object.keys(formData.medicalAlertFlags).length > 0 && { medicalAlertFlags: formData.medicalAlertFlags }),
     };
-    
-    console.log('Submitting patient data:', submitData);
 
     try {
       if (isEditMode) {

@@ -77,7 +77,6 @@ export const AppointmentForm: React.FC<AppointmentFormProps> = ({ onSuccess, onC
     }
 
     setApiError('');
-    console.log('Submitting appointment data:', formData);
 
     try {
       await createAppointmentMutation.mutateAsync(formData);
