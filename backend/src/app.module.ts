@@ -17,6 +17,7 @@ import { FeaturesModule } from './features/features.module';
 import { DatabaseModule } from './database/database.module';
 import { HealthModule } from './health/health.module';
 import { PharmacyModule } from './pharmacy/pharmacy.module';
+import { HospitalModule } from './hospital/hospital.module';
 
 @Module({
   imports: [
@@ -42,6 +43,7 @@ import { PharmacyModule } from './pharmacy/pharmacy.module';
     AIModule,
     FeaturesModule,
     PharmacyModule,
+    HospitalModule,
   ],
   providers: [
     {
