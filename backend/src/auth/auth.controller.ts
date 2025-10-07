@@ -2,6 +2,8 @@ import { Controller, Post, Body, Get, UseGuards, Request } from '@nestjs/common'
 import { ApiTags, ApiOperation, ApiResponse, ApiBearerAuth } from '@nestjs/swagger';
 import { AuthGuard } from '@nestjs/passport';
 import { Throttle } from '@nestjs/throttler';
+import { RolesGuard } from './roles.guard';
+import { Roles } from './roles.decorator';
 import { AuthService, LoginDto } from './auth.service';
 import { User } from './entities/user.entity';
 import { RefreshTokenDto } from './dto/refresh-token.dto';
@@ -38,7 +40,8 @@ export class AuthController {
   }
 
   @Get('profile')
-  @UseGuards(AuthGuard('jwt'))
+  @UseGuards(AuthGuard('jwt'), RolesGuard)
+  @Roles('super_admin', 'hospital_admin', 'doctor', 'dentist', 'pharmacist', 'staff', 'supplier', 'patient')
   @ApiBearerAuth()
   @ApiOperation({ summary: 'Get current user profile' })
   @ApiResponse({ status: 200, description: 'User profile retrieved successfully' })

@@ -12,6 +12,8 @@ import {
 } from '@nestjs/common';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard';
 import { TenantGuard } from '../tenants/tenant.guard';
+import { RolesGuard } from '../auth/roles.guard';
+import { Roles } from '../auth/roles.decorator';
 import { MLService, TrainingData, PredictionRequest } from './ml-service';
 import { InsightsService, InsightGenerationConfig } from './insights.service';
 import { AIModel, ModelType, ModelCategory } from './entities/ai-model.entity';
@@ -19,7 +21,8 @@ import { AIPrediction, PredictionType } from './entities/ai-prediction.entity';
 import { AIInsight, InsightCategory, InsightPriority } from './entities/ai-insight.entity';
 
 @Controller('ai')
-@UseGuards(JwtAuthGuard, TenantGuard)
+@UseGuards(JwtAuthGuard, TenantGuard, RolesGuard)
+@Roles('super_admin', 'hospital_admin', 'doctor', 'dentist')
 export class AIController {
   constructor(
     private readonly mlService: MLService,

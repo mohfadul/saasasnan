@@ -15,6 +15,8 @@ import {
 import { ApiTags, ApiOperation, ApiResponse, ApiBearerAuth } from '@nestjs/swagger';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard';
 import { TenantGuard } from '../tenants/tenant.guard';
+import { RolesGuard } from '../auth/roles.guard';
+import { Roles } from '../auth/roles.decorator';
 import { User } from '../auth/entities/user.entity';
 import { FeatureFlagsService, FeatureFlagEvaluationRequest } from './feature-flags.service';
 import { ABTestingService, ABTestCreationRequest, ConversionEvent } from './ab-testing.service';
@@ -23,7 +25,8 @@ import { ABTest, ABTestStatus, ABTestType } from './entities/ab-test.entity';
 
 @ApiTags('Feature Management')
 @ApiBearerAuth()
-@UseGuards(JwtAuthGuard, TenantGuard)
+@UseGuards(JwtAuthGuard, TenantGuard, RolesGuard)
+@Roles('super_admin', 'hospital_admin')
 @Controller('features')
 export class FeaturesController {
   constructor(
