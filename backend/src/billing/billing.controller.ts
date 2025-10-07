@@ -18,6 +18,8 @@ import { PaymentsService, CreatePaymentDto, UpdatePaymentDto } from './payments.
 import { InsuranceService, CreateInsuranceProviderDto, UpdateInsuranceProviderDto, CreatePatientInsuranceDto } from './insurance.service';
 import { User } from '../auth/entities/user.entity';
 import { TenantGuard } from '../tenants/tenant.guard';
+import { RolesGuard } from '../auth/roles.guard';
+import { Roles } from '../auth/roles.decorator';
 
 @ApiTags('Billing')
 @Controller('billing')
@@ -33,6 +35,8 @@ export class BillingController {
 
   // Invoice endpoints
   @Post('invoices')
+  @UseGuards(RolesGuard)
+  @Roles('super_admin', 'hospital_admin', 'staff')
   @ApiOperation({ summary: 'Create a new invoice' })
   @ApiResponse({ status: 201, description: 'Invoice created successfully' })
   createInvoice(@Body() createInvoiceDto: CreateInvoiceDto, @Request() req: { user: User }) {
@@ -40,6 +44,8 @@ export class BillingController {
   }
 
   @Get('invoices')
+  @UseGuards(RolesGuard)
+  @Roles('super_admin', 'hospital_admin', 'staff', 'patient')
   @ApiOperation({ summary: 'Get all invoices' })
   @ApiQuery({ name: 'clinicId', required: false, description: 'Filter by clinic ID' })
   @ApiQuery({ name: 'status', required: false, description: 'Filter by status' })
@@ -66,6 +72,8 @@ export class BillingController {
   }
 
   @Get('invoices/overdue')
+  @UseGuards(RolesGuard)
+  @Roles('super_admin', 'hospital_admin', 'staff')
   @ApiOperation({ summary: 'Get overdue invoices' })
   @ApiQuery({ name: 'clinicId', required: false, description: 'Filter by clinic ID' })
   @ApiResponse({ status: 200, description: 'Overdue invoices retrieved successfully' })
@@ -74,6 +82,8 @@ export class BillingController {
   }
 
   @Get('invoices/stats')
+  @UseGuards(RolesGuard)
+  @Roles('super_admin', 'hospital_admin')
   @ApiOperation({ summary: 'Get invoice statistics' })
   @ApiQuery({ name: 'clinicId', required: false, description: 'Filter by clinic ID' })
   @ApiQuery({ name: 'startDate', required: false, description: 'Filter by start date' })
@@ -89,6 +99,8 @@ export class BillingController {
   }
 
   @Get('invoices/:id')
+  @UseGuards(RolesGuard)
+  @Roles('super_admin', 'hospital_admin', 'staff', 'patient')
   @ApiOperation({ summary: 'Get invoice by ID' })
   @ApiResponse({ status: 200, description: 'Invoice retrieved successfully' })
   getInvoice(@Param('id') id: string, @Request() req: { user: User }) {
@@ -96,6 +108,8 @@ export class BillingController {
   }
 
   @Patch('invoices/:id')
+  @UseGuards(RolesGuard)
+  @Roles('super_admin', 'hospital_admin', 'staff')
   @ApiOperation({ summary: 'Update invoice' })
   @ApiResponse({ status: 200, description: 'Invoice updated successfully' })
   updateInvoice(
@@ -107,6 +121,8 @@ export class BillingController {
   }
 
   @Patch('invoices/:id/send')
+  @UseGuards(RolesGuard)
+  @Roles('super_admin', 'hospital_admin', 'staff')
   @ApiOperation({ summary: 'Send invoice to customer' })
   @ApiResponse({ status: 200, description: 'Invoice sent successfully' })
   sendInvoice(@Param('id') id: string, @Request() req: { user: User }) {
@@ -114,6 +130,8 @@ export class BillingController {
   }
 
   @Patch('invoices/:id/mark-paid')
+  @UseGuards(RolesGuard)
+  @Roles('super_admin', 'hospital_admin', 'staff')
   @ApiOperation({ summary: 'Mark invoice as paid' })
   @ApiResponse({ status: 200, description: 'Invoice marked as paid successfully' })
   markInvoiceAsPaid(@Param('id') id: string, @Request() req: { user: User }) {
@@ -121,6 +139,8 @@ export class BillingController {
   }
 
   @Delete('invoices/:id')
+  @UseGuards(RolesGuard)
+  @Roles('super_admin', 'hospital_admin')
   @ApiOperation({ summary: 'Delete invoice' })
   @ApiResponse({ status: 200, description: 'Invoice deleted successfully' })
   deleteInvoice(@Param('id') id: string, @Request() req: { user: User }) {
@@ -129,6 +149,8 @@ export class BillingController {
 
   // Payment endpoints
   @Post('payments')
+  @UseGuards(RolesGuard)
+  @Roles('super_admin', 'hospital_admin', 'staff')
   @ApiOperation({ summary: 'Create a new payment' })
   @ApiResponse({ status: 201, description: 'Payment created successfully' })
   createPayment(@Body() createPaymentDto: CreatePaymentDto, @Request() req: { user: User }) {
@@ -136,6 +158,8 @@ export class BillingController {
   }
 
   @Get('payments')
+  @UseGuards(RolesGuard)
+  @Roles('super_admin', 'hospital_admin', 'staff')
   @ApiOperation({ summary: 'Get all payments' })
   @ApiQuery({ name: 'invoiceId', required: false, description: 'Filter by invoice ID' })
   @ApiQuery({ name: 'paymentMethod', required: false, description: 'Filter by payment method' })
@@ -162,6 +186,8 @@ export class BillingController {
   }
 
   @Get('payments/stats')
+  @UseGuards(RolesGuard)
+  @Roles('super_admin', 'hospital_admin')
   @ApiOperation({ summary: 'Get payment statistics' })
   @ApiQuery({ name: 'startDate', required: false, description: 'Filter by start date' })
   @ApiQuery({ name: 'endDate', required: false, description: 'Filter by end date' })
@@ -175,6 +201,8 @@ export class BillingController {
   }
 
   @Get('payments/:id')
+  @UseGuards(RolesGuard)
+  @Roles('super_admin', 'hospital_admin', 'staff', 'patient')
   @ApiOperation({ summary: 'Get payment by ID' })
   @ApiResponse({ status: 200, description: 'Payment retrieved successfully' })
   getPayment(@Param('id') id: string, @Request() req: { user: User }) {
@@ -182,6 +210,8 @@ export class BillingController {
   }
 
   @Patch('payments/:id')
+  @UseGuards(RolesGuard)
+  @Roles('super_admin', 'hospital_admin', 'staff')
   @ApiOperation({ summary: 'Update payment' })
   @ApiResponse({ status: 200, description: 'Payment updated successfully' })
   updatePayment(
@@ -193,6 +223,8 @@ export class BillingController {
   }
 
   @Post('payments/:id/refund')
+  @UseGuards(RolesGuard)
+  @Roles('super_admin', 'hospital_admin')
   @ApiOperation({ summary: 'Refund payment' })
   @ApiResponse({ status: 200, description: 'Payment refunded successfully' })
   refundPayment(
@@ -204,6 +236,8 @@ export class BillingController {
   }
 
   @Delete('payments/:id')
+  @UseGuards(RolesGuard)
+  @Roles('super_admin', 'hospital_admin')
   @ApiOperation({ summary: 'Delete payment' })
   @ApiResponse({ status: 200, description: 'Payment deleted successfully' })
   deletePayment(@Param('id') id: string, @Request() req: { user: User }) {
@@ -212,6 +246,8 @@ export class BillingController {
 
   // Insurance Provider endpoints
   @Post('insurance-providers')
+  @UseGuards(RolesGuard)
+  @Roles('super_admin', 'hospital_admin')
   @ApiOperation({ summary: 'Create insurance provider' })
   @ApiResponse({ status: 201, description: 'Insurance provider created successfully' })
   createInsuranceProvider(@Body() createDto: CreateInsuranceProviderDto, @Request() req: { user: User }) {
@@ -219,6 +255,8 @@ export class BillingController {
   }
 
   @Get('insurance-providers')
+  @UseGuards(RolesGuard)
+  @Roles('super_admin', 'hospital_admin', 'staff')
   @ApiOperation({ summary: 'Get all insurance providers' })
   @ApiQuery({ name: 'status', required: false, description: 'Filter by status' })
   @ApiResponse({ status: 200, description: 'Insurance providers retrieved successfully' })
@@ -227,6 +265,8 @@ export class BillingController {
   }
 
   @Get('insurance-providers/:id')
+  @UseGuards(RolesGuard)
+  @Roles('super_admin', 'hospital_admin', 'staff')
   @ApiOperation({ summary: 'Get insurance provider by ID' })
   @ApiResponse({ status: 200, description: 'Insurance provider retrieved successfully' })
   getInsuranceProvider(@Param('id') id: string, @Request() req: { user: User }) {
@@ -234,6 +274,8 @@ export class BillingController {
   }
 
   @Patch('insurance-providers/:id')
+  @UseGuards(RolesGuard)
+  @Roles('super_admin', 'hospital_admin')
   @ApiOperation({ summary: 'Update insurance provider' })
   @ApiResponse({ status: 200, description: 'Insurance provider updated successfully' })
   updateInsuranceProvider(
@@ -245,6 +287,8 @@ export class BillingController {
   }
 
   @Delete('insurance-providers/:id')
+  @UseGuards(RolesGuard)
+  @Roles('super_admin', 'hospital_admin')
   @ApiOperation({ summary: 'Delete insurance provider' })
   @ApiResponse({ status: 200, description: 'Insurance provider deleted successfully' })
   deleteInsuranceProvider(@Param('id') id: string, @Request() req: { user: User }) {
@@ -253,6 +297,8 @@ export class BillingController {
 
   // Patient Insurance endpoints
   @Post('patient-insurance')
+  @UseGuards(RolesGuard)
+  @Roles('super_admin', 'hospital_admin', 'staff')
   @ApiOperation({ summary: 'Create patient insurance' })
   @ApiResponse({ status: 201, description: 'Patient insurance created successfully' })
   createPatientInsurance(@Body() createDto: CreatePatientInsuranceDto, @Request() req: { user: User }) {
@@ -260,6 +306,8 @@ export class BillingController {
   }
 
   @Get('patients/:patientId/insurance')
+  @UseGuards(RolesGuard)
+  @Roles('super_admin', 'hospital_admin', 'staff', 'patient')
   @ApiOperation({ summary: 'Get patient insurance information' })
   @ApiResponse({ status: 200, description: 'Patient insurance retrieved successfully' })
   getPatientInsurances(@Param('patientId') patientId: string, @Request() req: { user: User }) {
@@ -267,6 +315,8 @@ export class BillingController {
   }
 
   @Patch('patient-insurance/:id')
+  @UseGuards(RolesGuard)
+  @Roles('super_admin', 'hospital_admin', 'staff')
   @ApiOperation({ summary: 'Update patient insurance' })
   @ApiResponse({ status: 200, description: 'Patient insurance updated successfully' })
   updatePatientInsurance(
@@ -278,6 +328,8 @@ export class BillingController {
   }
 
   @Delete('patient-insurance/:id')
+  @UseGuards(RolesGuard)
+  @Roles('super_admin', 'hospital_admin')
   @ApiOperation({ summary: 'Delete patient insurance' })
   @ApiResponse({ status: 200, description: 'Patient insurance deleted successfully' })
   deletePatientInsurance(@Param('id') id: string, @Request() req: { user: User }) {
@@ -285,6 +337,8 @@ export class BillingController {
   }
 
   @Get('insurance/stats')
+  @UseGuards(RolesGuard)
+  @Roles('super_admin', 'hospital_admin')
   @ApiOperation({ summary: 'Get insurance statistics' })
   @ApiResponse({ status: 200, description: 'Insurance statistics retrieved successfully' })
   getInsuranceStats(@Request() req: { user: User }) {
@@ -293,6 +347,8 @@ export class BillingController {
 
   // Billing overview
   @Get('overview')
+  @UseGuards(RolesGuard)
+  @Roles('super_admin', 'hospital_admin')
   @ApiOperation({ summary: 'Get billing overview' })
   @ApiResponse({ status: 200, description: 'Billing overview retrieved successfully' })
   getBillingOverview(@Request() req: { user: User }) {

@@ -15,6 +15,8 @@ import { AuthGuard } from '@nestjs/passport';
 import { ClinicalNotesService, CreateClinicalNoteDto, UpdateClinicalNoteDto, CreateTreatmentPlanDto, UpdateTreatmentPlanDto } from './clinical-notes.service';
 import { User } from '../auth/entities/user.entity';
 import { TenantGuard } from '../tenants/tenant.guard';
+import { RolesGuard } from '../auth/roles.guard';
+import { Roles } from '../auth/roles.decorator';
 
 @ApiTags('Clinical')
 @Controller('clinical')
@@ -25,6 +27,8 @@ export class ClinicalController {
 
   // Clinical Notes endpoints
   @Post('notes')
+  @UseGuards(RolesGuard)
+  @Roles('super_admin', 'hospital_admin', 'doctor', 'dentist')
   @ApiOperation({ summary: 'Create a new clinical note' })
   @ApiResponse({ status: 201, description: 'Clinical note created successfully' })
   createClinicalNote(@Body() createDto: CreateClinicalNoteDto, @Request() req: { user: User }) {
@@ -32,6 +36,8 @@ export class ClinicalController {
   }
 
   @Get('notes')
+  @UseGuards(RolesGuard)
+  @Roles('super_admin', 'hospital_admin', 'doctor', 'dentist', 'staff')
   @ApiOperation({ summary: 'Get all clinical notes' })
   @ApiQuery({ name: 'patientId', required: false, description: 'Filter by patient ID' })
   @ApiQuery({ name: 'providerId', required: false, description: 'Filter by provider ID' })
@@ -61,6 +67,8 @@ export class ClinicalController {
   }
 
   @Get('notes/:id')
+  @UseGuards(RolesGuard)
+  @Roles('super_admin', 'hospital_admin', 'doctor', 'dentist', 'staff', 'patient')
   @ApiOperation({ summary: 'Get clinical note by ID' })
   @ApiResponse({ status: 200, description: 'Clinical note retrieved successfully' })
   getClinicalNote(@Param('id') id: string, @Request() req: { user: User }) {
@@ -68,6 +76,8 @@ export class ClinicalController {
   }
 
   @Patch('notes/:id')
+  @UseGuards(RolesGuard)
+  @Roles('super_admin', 'hospital_admin', 'doctor', 'dentist')
   @ApiOperation({ summary: 'Update clinical note' })
   @ApiResponse({ status: 200, description: 'Clinical note updated successfully' })
   updateClinicalNote(
@@ -79,6 +89,8 @@ export class ClinicalController {
   }
 
   @Patch('notes/:id/finalize')
+  @UseGuards(RolesGuard)
+  @Roles('super_admin', 'hospital_admin', 'doctor', 'dentist')
   @ApiOperation({ summary: 'Finalize clinical note' })
   @ApiResponse({ status: 200, description: 'Clinical note finalized successfully' })
   finalizeClinicalNote(@Param('id') id: string, @Request() req: { user: User }) {
@@ -86,6 +98,8 @@ export class ClinicalController {
   }
 
   @Patch('notes/:id/amend')
+  @UseGuards(RolesGuard)
+  @Roles('super_admin', 'hospital_admin', 'doctor', 'dentist')
   @ApiOperation({ summary: 'Amend clinical note' })
   @ApiResponse({ status: 200, description: 'Clinical note amended successfully' })
   amendClinicalNote(
@@ -97,6 +111,8 @@ export class ClinicalController {
   }
 
   @Delete('notes/:id')
+  @UseGuards(RolesGuard)
+  @Roles('super_admin', 'hospital_admin')
   @ApiOperation({ summary: 'Delete clinical note' })
   @ApiResponse({ status: 200, description: 'Clinical note deleted successfully' })
   deleteClinicalNote(@Param('id') id: string, @Request() req: { user: User }) {
@@ -105,6 +121,8 @@ export class ClinicalController {
 
   // Treatment Plans endpoints
   @Post('treatment-plans')
+  @UseGuards(RolesGuard)
+  @Roles('super_admin', 'hospital_admin', 'doctor', 'dentist')
   @ApiOperation({ summary: 'Create a new treatment plan' })
   @ApiResponse({ status: 201, description: 'Treatment plan created successfully' })
   createTreatmentPlan(@Body() createDto: CreateTreatmentPlanDto, @Request() req: { user: User }) {
@@ -112,6 +130,8 @@ export class ClinicalController {
   }
 
   @Get('treatment-plans')
+  @UseGuards(RolesGuard)
+  @Roles('super_admin', 'hospital_admin', 'doctor', 'dentist', 'staff', 'patient')
   @ApiOperation({ summary: 'Get all treatment plans' })
   @ApiQuery({ name: 'patientId', required: false, description: 'Filter by patient ID' })
   @ApiQuery({ name: 'providerId', required: false, description: 'Filter by provider ID' })
@@ -135,6 +155,8 @@ export class ClinicalController {
   }
 
   @Get('treatment-plans/:id')
+  @UseGuards(RolesGuard)
+  @Roles('super_admin', 'hospital_admin', 'doctor', 'dentist', 'staff', 'patient')
   @ApiOperation({ summary: 'Get treatment plan by ID' })
   @ApiResponse({ status: 200, description: 'Treatment plan retrieved successfully' })
   getTreatmentPlan(@Param('id') id: string, @Request() req: { user: User }) {
@@ -142,6 +164,8 @@ export class ClinicalController {
   }
 
   @Patch('treatment-plans/:id')
+  @UseGuards(RolesGuard)
+  @Roles('super_admin', 'hospital_admin', 'doctor', 'dentist')
   @ApiOperation({ summary: 'Update treatment plan' })
   @ApiResponse({ status: 200, description: 'Treatment plan updated successfully' })
   updateTreatmentPlan(
@@ -153,6 +177,8 @@ export class ClinicalController {
   }
 
   @Patch('treatment-plans/:id/propose')
+  @UseGuards(RolesGuard)
+  @Roles('super_admin', 'hospital_admin', 'doctor', 'dentist')
   @ApiOperation({ summary: 'Propose treatment plan to patient' })
   @ApiResponse({ status: 200, description: 'Treatment plan proposed successfully' })
   proposeTreatmentPlan(@Param('id') id: string, @Request() req: { user: User }) {
@@ -160,6 +186,8 @@ export class ClinicalController {
   }
 
   @Patch('treatment-plans/:id/accept')
+  @UseGuards(RolesGuard)
+  @Roles('super_admin', 'hospital_admin', 'patient')
   @ApiOperation({ summary: 'Accept treatment plan' })
   @ApiResponse({ status: 200, description: 'Treatment plan accepted successfully' })
   acceptTreatmentPlan(@Param('id') id: string, @Request() req: { user: User }) {
@@ -167,6 +195,8 @@ export class ClinicalController {
   }
 
   @Patch('treatment-plans/:id/complete')
+  @UseGuards(RolesGuard)
+  @Roles('super_admin', 'hospital_admin', 'doctor', 'dentist')
   @ApiOperation({ summary: 'Complete treatment plan' })
   @ApiResponse({ status: 200, description: 'Treatment plan completed successfully' })
   completeTreatmentPlan(@Param('id') id: string, @Request() req: { user: User }) {
@@ -174,6 +204,8 @@ export class ClinicalController {
   }
 
   @Delete('treatment-plans/:id')
+  @UseGuards(RolesGuard)
+  @Roles('super_admin', 'hospital_admin')
   @ApiOperation({ summary: 'Delete treatment plan' })
   @ApiResponse({ status: 200, description: 'Treatment plan deleted successfully' })
   deleteTreatmentPlan(@Param('id') id: string, @Request() req: { user: User }) {
@@ -182,6 +214,8 @@ export class ClinicalController {
 
   // Analytics
   @Get('analytics')
+  @UseGuards(RolesGuard)
+  @Roles('super_admin', 'hospital_admin', 'doctor', 'dentist')
   @ApiOperation({ summary: 'Get clinical analytics' })
   @ApiQuery({ name: 'startDate', required: false, description: 'Filter by start date' })
   @ApiQuery({ name: 'endDate', required: false, description: 'Filter by end date' })
