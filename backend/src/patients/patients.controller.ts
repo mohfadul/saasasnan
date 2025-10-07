@@ -16,6 +16,8 @@ import { PatientsService } from './patients.service';
 import { CreatePatientDto, UpdatePatientDto } from './dto';
 import { User } from '../auth/entities/user.entity';
 import { TenantGuard } from '../tenants/tenant.guard';
+import { RolesGuard } from '../auth/roles.guard';
+import { Roles } from '../auth/roles.decorator';
 
 @ApiTags('Patients')
 @Controller('patients')
@@ -25,6 +27,8 @@ export class PatientsController {
   constructor(private readonly patientsService: PatientsService) {}
 
   @Post()
+  @UseGuards(RolesGuard)
+  @Roles('super_admin', 'hospital_admin', 'staff')
   @ApiOperation({ summary: 'Create a new patient' })
   @ApiResponse({ status: 201, description: 'Patient created successfully' })
   @ApiResponse({ status: 400, description: 'Bad request' })
@@ -33,6 +37,8 @@ export class PatientsController {
   }
 
   @Get()
+  @UseGuards(RolesGuard)
+  @Roles('super_admin', 'hospital_admin', 'doctor', 'dentist', 'staff')
   @ApiOperation({ summary: 'Get all patients for tenant' })
   @ApiQuery({ name: 'clinicId', required: false, description: 'Filter by clinic ID' })
   @ApiResponse({ status: 200, description: 'Patients retrieved successfully' })
@@ -44,6 +50,8 @@ export class PatientsController {
   }
 
   @Get('search')
+  @UseGuards(RolesGuard)
+  @Roles('super_admin', 'hospital_admin', 'doctor', 'dentist', 'staff')
   @ApiOperation({ summary: 'Search patients' })
   @ApiQuery({ name: 'q', required: true, description: 'Search term' })
   @ApiQuery({ name: 'clinicId', required: false, description: 'Filter by clinic ID' })
@@ -57,6 +65,8 @@ export class PatientsController {
   }
 
   @Get('stats')
+  @UseGuards(RolesGuard)
+  @Roles('super_admin', 'hospital_admin')
   @ApiOperation({ summary: 'Get patient statistics' })
   @ApiQuery({ name: 'clinicId', required: false, description: 'Filter by clinic ID' })
   @ApiResponse({ status: 200, description: 'Patient statistics retrieved successfully' })
@@ -68,14 +78,18 @@ export class PatientsController {
   }
 
   @Get(':id')
+  @UseGuards(RolesGuard)
+  @Roles('super_admin', 'hospital_admin', 'doctor', 'dentist', 'staff', 'patient')
   @ApiOperation({ summary: 'Get patient by ID' })
   @ApiResponse({ status: 200, description: 'Patient retrieved successfully' })
   @ApiResponse({ status: 404, description: 'Patient not found' })
-  findOne(@Param('id') id: string, @Request() req: { user: User }) {
+  findOne(@Param('id') id: string, @Request() req: { user: User}) {
     return this.patientsService.findOne(id, req.user.tenant_id);
   }
 
   @Patch(':id')
+  @UseGuards(RolesGuard)
+  @Roles('super_admin', 'hospital_admin', 'staff')
   @ApiOperation({ summary: 'Update patient' })
   @ApiResponse({ status: 200, description: 'Patient updated successfully' })
   @ApiResponse({ status: 404, description: 'Patient not found' })
@@ -88,6 +102,8 @@ export class PatientsController {
   }
 
   @Delete(':id')
+  @UseGuards(RolesGuard)
+  @Roles('super_admin', 'hospital_admin')
   @ApiOperation({ summary: 'Delete patient' })
   @ApiResponse({ status: 200, description: 'Patient deleted successfully' })
   @ApiResponse({ status: 404, description: 'Patient not found' })
