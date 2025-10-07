@@ -18,6 +18,8 @@ import AnalyticsChart, { transformTimeSeriesData, transformRevenueData } from '.
 const AnalyticsPage: React.FC = () => {
   const [filters, setFilters] = useState<AnalyticsFilter>({
     period: 'daily',
+    start_date: new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
+    end_date: new Date().toISOString().split('T')[0],
   });
 
   // Fetch dashboard overview data
