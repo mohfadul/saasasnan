@@ -26,7 +26,7 @@ export const InventoryTable: React.FC<InventoryTableProps> = ({ clinicId }) => {
   const filteredInventory = inventory?.filter((item: Inventory) => {
     const matchesSearch = !searchTerm || 
       item.product?.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      item.product?.sku.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      item.product?.sku?.toLowerCase().includes(searchTerm.toLowerCase()) ||
       item.location?.toLowerCase().includes(searchTerm.toLowerCase());
 
     const matchesStatus = statusFilter === 'all' || item.status === statusFilter;

@@ -1,207 +1,286 @@
-// Marketplace Types
+/**
+ * Marketplace Type Definitions
+ */
 
-export enum ProductCategory {
-  DENTAL_EQUIPMENT = 'dental_equipment',
-  INSTRUMENTS = 'instruments',
-  CONSUMABLES = 'consumables',
-  MEDICATIONS = 'medications',
-  STERILIZATION = 'sterilization',
-  PPE = 'ppe',
-  OFFICE_SUPPLIES = 'office_supplies',
-  IMAGING = 'imaging',
-  LABORATORY = 'laboratory',
-  ORTHODONTICS = 'orthodontics',
-  PERIODONTICS = 'periodontics',
-  ENDODONTICS = 'endodontics',
-}
-
+// Supplier Types
 export interface Supplier {
   id: string;
-  tenantId: string;
+  tenant_id: string;
   name: string;
-  contactInfo: {
-    email: string;
-    phone: string;
-    address: {
-      street: string;
-      city: string;
-      state: string;
-      zip: string;
-    };
+  contact_info: {
+    email?: string;
+    phone?: string;
+    address?: string;
+    contactPerson?: string;
   };
-  businessInfo: {
-    taxId?: string;
-    businessLicense?: string;
+  address: {
+    street?: string;
+    city?: string;
+    state?: string;
+    country?: string;
+    postalCode?: string;
   };
-  status: 'active' | 'pending' | 'suspended' | 'inactive';
-  rating: number;
-  totalOrders: number;
-  onTimeDeliveryRate: number;
-  createdAt: string;
-  updatedAt: string;
+  tax_id?: string;
+  status: 'active' | 'inactive' | 'suspended';
+  rating?: number;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface CreateSupplierRequest {
+  name: string;
+  contact_info: Supplier['contact_info'];
+  address: Supplier['address'];
+  tax_id?: string;
+  status?: Supplier['status'];
+}
+
+// Product Types (matches existing component usage)
+export interface Product {
+  id: string;
+  tenant_id: string;
+  supplier_id: string;
+  category_id?: string;
+  name: string;
+  description?: string;
+  sku?: string;
+  manufacturer?: string;
+  brand?: string;
+  model?: string;
+  unitPrice: number;
+  unit_price: number;
+  sellingPrice: number;
+  costPrice: number;
+  cost_price?: number;
+  wholesalePrice?: number;
+  retailPrice?: number;
+  unit: string;
+  unitOfMeasure?: string;
+  status: 'active' | 'inactive' | 'discontinued';
+  isActive?: boolean;
+  is_featured: boolean;
+  isFeatured: boolean;
+  requiresPrescription?: boolean;
+  specifications?: Record<string, any>;
+  image_url?: string;
+  imageUrl?: string;
+  images?: string[];
+  created_at: string;
+  updated_at: string;
+  supplier?: Supplier;
+  category?: string;
+}
+
+// Product Category (enum for compatibility with existing code)
+export enum ProductCategory {
+  DENTAL_EQUIPMENT = 'DENTAL_EQUIPMENT',
+  CONSUMABLES = 'CONSUMABLES',
+  INSTRUMENTS = 'INSTRUMENTS',
+  MATERIALS = 'MATERIALS',
+  PHARMACEUTICALS = 'PHARMACEUTICALS',
+  PROTECTIVE_EQUIPMENT = 'PROTECTIVE_EQUIPMENT',
+  DIAGNOSTIC = 'DIAGNOSTIC',
+  OTHER = 'OTHER',
 }
 
 export interface ProductCategoryEntity {
   id: string;
-  tenantId: string;
+  tenant_id: string;
   name: string;
   description?: string;
-  parentId?: string;
-  sortOrder: number;
-  createdAt: string;
-  updatedAt: string;
+  parent_id?: string;
+  sort_order: number;
+  created_at: string;
+  updated_at: string;
 }
 
-export interface Product {
-  id: string;
-  tenantId: string;
-  supplierId: string;
-  categoryId?: string;
-  category?: ProductCategoryEntity | ProductCategory | string;
+export interface CreateProductRequest {
+  supplier_id: string;
+  category_id?: string;
   name: string;
   description?: string;
-  sku: string;
-  manufacturer?: string;
-  barcode?: string;
-  brand?: string;
-  model?: string;
-  unitOfMeasure?: string;
-  costPrice: number;
-  unitPrice?: number;
-  wholesalePrice?: number;
-  sellingPrice: number;
-  retailPrice?: number;
-  minimumPrice?: number;
-  attributes: Record<string, any>;
-  specifications: Record<string, any>;
-  images: string[];
-  imageUrl?: string;
-  status: 'active' | 'inactive' | 'discontinued';
-  isActive?: boolean;
-  isFeatured: boolean;
-  requiresPrescription?: boolean;
-  tags: string[];
-  metaTitle?: string;
-  metaDescription?: string;
-  searchKeywords: string[];
+  sku?: string;
+  unit_price: number;
+  cost_price?: number;
+  unit: string;
+  status?: Product['status'];
+  is_featured?: boolean;
+  specifications?: Record<string, any>;
+  image_url?: string;
+}
+
+// Order Types
+export interface Order {
+  id: string;
+  tenant_id: string;
+  clinic_id: string;
+  supplier_id: string;
+  order_number: string;
+  status: 'pending' | 'confirmed' | 'shipped' | 'delivered' | 'cancelled';
+  order_date: string;
+  expected_delivery?: string;
+  delivery_date?: string;
+  subtotal: number;
+  tax_amount: number;
+  shipping_cost: number;
+  total_amount: number;
+  notes?: string;
+  created_by?: string;
+  created_at: string;
+  updated_at: string;
   supplier?: Supplier;
-  createdAt: string;
-  updatedAt: string;
+  items?: OrderItem[];
 }
 
 export interface OrderItem {
   id: string;
-  orderId: string;
-  productId: string;
+  order_id: string;
+  product_id: string;
   quantity: number;
-  unitPrice: number;
-  totalPrice: number;
-  productName: string;
-  productSku: string;
+  unit_price: number;
+  tax_amount: number;
+  total_price: number;
   product?: Product;
-  createdAt: string;
 }
 
-export interface Order {
-  id: string;
-  tenantId: string;
-  clinicId: string;
-  supplierId: string;
-  orderNumber: string;
-  orderDate: string;
-  expectedDeliveryDate?: string;
-  actualDeliveryDate?: string;
-  status: 'draft' | 'pending' | 'confirmed' | 'shipped' | 'delivered' | 'cancelled' | 'returned';
-  subtotal: number;
-  taxAmount: number;
-  shippingCost: number;
-  discountAmount: number;
-  totalAmount: number;
+export interface CreateOrderRequest {
+  clinic_id: string;
+  supplier_id: string;
+  expected_delivery?: string;
   notes?: string;
-  shippingAddress?: Record<string, any>;
-  supplier?: Supplier;
-  items?: OrderItem[];
-  createdAt: string;
-  updatedAt: string;
+  items: {
+    product_id: string;
+    quantity: number;
+    unit_price: number;
+  }[];
 }
 
+// Inventory Types (matches existing component usage)
 export interface Inventory {
   id: string;
-  tenantId: string;
-  clinicId: string;
-  productId: string;
+  tenant_id: string;
+  clinic_id: string;
+  product_id: string;
+  quantity: number;
   currentStock: number;
-  minimumStock: number;
-  maximumStock: number;
   reservedStock: number;
+  min_stock_level: number;
+  minimumStock: number;
+  max_stock_level: number;
+  maximumStock: number;
+  reorder_point: number;
   location?: string;
-  batchNumber?: string;
+  batch_number?: string;
+  expiry_date?: string;
   expiryDate?: string;
+  last_restocked?: string;
   averageCost?: number;
-  lastCost?: number;
-  status: 'active' | 'low_stock' | 'out_of_stock' | 'expired';
+  status: 'in_stock' | 'low_stock' | 'out_of_stock' | 'discontinued';
   product?: Product;
-  createdAt: string;
-  updatedAt: string;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface InventoryItem {
+  id: string;
+  tenant_id: string;
+  clinic_id: string;
+  product_id: string;
+  quantity: number;
+  min_stock_level: number;
+  max_stock_level: number;
+  reorder_point: number;
+  location?: string;
+  batch_number?: string;
+  expiry_date?: string;
+  last_restocked?: string;
+  product?: Product;
+  created_at: string;
+  updated_at: string;
 }
 
 export interface InventoryTransaction {
   id: string;
-  tenantId: string;
-  clinicId: string;
-  productId: string;
-  inventoryId: string;
-  transactionType: 'purchase' | 'sale' | 'adjustment' | 'transfer' | 'return' | 'waste';
+  tenant_id: string;
+  inventory_id: string;
+  transaction_type: 'purchase' | 'sale' | 'adjustment' | 'return' | 'transfer' | 'waste';
   quantity: number;
-  unitCost?: number;
-  totalCost?: number;
-  referenceType?: string;
-  referenceId?: string;
+  reference_id?: string;
   notes?: string;
-  createdBy?: string;
-  inventory?: Inventory;
-  product?: Product;
-  createdAt: string;
+  performed_by?: string;
+  created_at: string;
 }
 
+export interface CreateInventoryRequest {
+  clinic_id: string;
+  product_id: string;
+  quantity: number;
+  min_stock_level?: number;
+  max_stock_level?: number;
+  reorder_point?: number;
+  location?: string;
+  batch_number?: string;
+  expiry_date?: string;
+}
+
+// Stats Types
 export interface MarketplaceOverview {
   suppliers: {
     totalSuppliers: number;
     activeSuppliers: number;
-    inactiveSuppliers: number;
     averageRating: number;
-    topSuppliers: Array<{
-      id: string;
-      name: string;
-      rating: number;
-      totalOrders: number;
-    }>;
   };
   products: {
     totalProducts: number;
     activeProducts: number;
-    inactiveProducts: number;
     featuredProducts: number;
-    categoriesCount: number;
   };
   orders: {
     totalOrders: number;
-    statusStats: Record<string, number>;
+    pendingOrders: number;
+    completedOrders: number;
     totalValue: number;
-    averageOrderValue: number;
   };
-  summary: {
-    totalSuppliers: number;
-    totalProducts: number;
+  inventory: {
+    totalItems: number;
+    lowStockItems: number;
+    expiringSoon: number;
+    totalValue: number;
+  };
+}
+
+export interface SupplierStats {
+  totalSuppliers: number;
+  activeSuppliers: number;
+  inactiveSuppliers: number;
+  suspendedSuppliers: number;
+  averageRating: number;
+  topSuppliers: Array<{
+    id: string;
+    name: string;
     totalOrders: number;
-    averageSupplierRating: number;
-  };
+    totalValue: number;
+    rating: number;
+  }>;
+}
+
+export interface ProductStats {
+  totalProducts: number;
+  activeProducts: number;
+  lowStockProducts: number;
+  topSellingProducts: Array<{
+    id: string;
+    name: string;
+    totalSold: number;
+    revenue: number;
+  }>;
 }
 
 export interface InventoryStats {
   totalItems: number;
+  totalValue: number;
   lowStockItems: number;
   outOfStockItems: number;
+  expiringSoon: number;
   expiredItems: number;
-  totalValue: number;
 }

@@ -1,18 +1,23 @@
 import React, { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
+import { SupplierTable } from '../components/marketplace/SupplierTable';
 import { ProductTable } from '../components/marketplace/ProductTable';
 import { InventoryTable } from '../components/marketplace/InventoryTable';
+import { OrdersTable } from '../components/marketplace/OrdersTable';
 import { marketplaceApi } from '../services/marketplace-api';
 
 export const MarketplacePage: React.FC = () => {
-  const [activeTab, setActiveTab] = useState<'products' | 'inventory' | 'orders'>('products');
+  const [activeTab, setActiveTab] = useState<'suppliers' | 'products' | 'inventory' | 'orders'>('suppliers');
 
   const { data: overview, isLoading: overviewLoading } = useQuery({
     queryKey: ['marketplace-overview'],
     queryFn: () => marketplaceApi.getOverview(),
+    retry: false,
+    enabled: false, // Temporarily disabled until database is fixed
   });
 
   const tabs = [
+    { id: 'suppliers', name: 'Suppliers', count: overview?.suppliers?.totalSuppliers || 0 },
     { id: 'products', name: 'Products', count: overview?.products?.totalProducts || 0 },
     { id: 'inventory', name: 'Inventory', count: overview?.summary?.totalProducts || 0 },
     { id: 'orders', name: 'Orders', count: overview?.orders?.totalOrders || 0 },
@@ -193,14 +198,10 @@ export const MarketplacePage: React.FC = () => {
 
       {/* Tab Content */}
       <div className="mt-6">
+        {activeTab === 'suppliers' && <SupplierTable />}
         {activeTab === 'products' && <ProductTable />}
         {activeTab === 'inventory' && <InventoryTable />}
-        {activeTab === 'orders' && (
-          <div className="bg-white shadow rounded-lg p-6">
-            <h3 className="text-lg font-medium text-gray-900 mb-4">Orders</h3>
-            <p className="text-gray-500">Order management interface coming soon...</p>
-          </div>
-        )}
+        {activeTab === 'orders' && <OrdersTable />}
       </div>
     </div>
   );

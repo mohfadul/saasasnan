@@ -28,7 +28,7 @@ export const ProductTable: React.FC<ProductTableProps> = ({ filters = {} }) => {
     const searchLower = searchTerm.toLowerCase();
     return (
       product.name.toLowerCase().includes(searchLower) ||
-      product.sku.toLowerCase().includes(searchLower) ||
+      product.sku?.toLowerCase().includes(searchLower) ||
       product.description?.toLowerCase().includes(searchLower) ||
       product.brand?.toLowerCase().includes(searchLower)
     );

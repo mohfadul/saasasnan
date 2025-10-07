@@ -1,22 +1,9 @@
-import React, { useState } from 'react';
+import React, { useState, useMemo, useCallback } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { billingApi } from '../../services/billing-api';
 import { Invoice } from '../../types/billing';
 import { PlusIcon, EyeIcon, PaperAirplaneIcon, CheckCircleIcon, TrashIcon, DocumentTextIcon } from '@heroicons/react/24/outline';
-import { format, isValid, parseISO } from 'date-fns';
-
-// Helper function to safely format dates
-const formatDate = (date: any, formatStr: string = 'MMM dd, yyyy'): string => {
-  if (!date) return 'N/A';
-  
-  try {
-    const parsedDate = typeof date === 'string' ? parseISO(date) : new Date(date);
-    if (!isValid(parsedDate)) return 'N/A';
-    return format(parsedDate, formatStr);
-  } catch (error) {
-    return 'N/A';
-  }
-};
+import { formatDate, formatCurrency, notifySuccess, notifyError, confirmAction, cleanFilters, getStatusBadgeColor } from '../../lib/utils';
 
 interface InvoiceTableProps {
   clinicId?: string;
@@ -39,21 +26,11 @@ export const InvoiceTable: React.FC<InvoiceTableProps> = ({ clinicId }) => {
   const { data: invoices = [], isLoading, error } = useQuery({
     queryKey: ['invoices', clinicId, filters],
     queryFn: async () => {
-      try {
-        const cleanFilters: Record<string, string> = {};
-        
-        if (clinicId && clinicId.trim()) cleanFilters.clinicId = clinicId.trim();
-        if (filters.status && filters.status.trim()) cleanFilters.status = filters.status.trim();
-        if (filters.customerType && filters.customerType.trim()) cleanFilters.customerType = filters.customerType.trim();
-        if (filters.startDate && filters.startDate.trim()) cleanFilters.startDate = filters.startDate.trim();
-        if (filters.endDate && filters.endDate.trim()) cleanFilters.endDate = filters.endDate.trim();
-        
-        const hasFilters = Object.keys(cleanFilters).length > 0;
-        return await billingApi.invoices.getAll(hasFilters ? cleanFilters : undefined);
-      } catch (err: any) {
-        console.error('❌ Invoice fetch error:', err);
-        throw err;
-      }
+      const params = cleanFilters({
+        clinicId,
+        ...filters,
+      });
+      return await billingApi.invoices.getAll(params);
     },
     retry: false,
   });
@@ -62,10 +39,10 @@ export const InvoiceTable: React.FC<InvoiceTableProps> = ({ clinicId }) => {
     mutationFn: billingApi.invoices.send,
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['invoices'] });
-      alert('Invoice sent successfully!');
+      notifySuccess('Invoice sent successfully!');
     },
     onError: (error: any) => {
-      alert(`Error sending invoice: ${error.response?.data?.message || error.message}`);
+      notifyError(`Error sending invoice: ${error.response?.data?.message || error.message}`);
     },
   });
 
@@ -73,10 +50,10 @@ export const InvoiceTable: React.FC<InvoiceTableProps> = ({ clinicId }) => {
     mutationFn: billingApi.invoices.markPaid,
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['invoices'] });
-      alert('Invoice marked as paid successfully!');
+      notifySuccess('Invoice marked as paid successfully!');
     },
     onError: (error: any) => {
-      alert(`Error marking invoice as paid: ${error.response?.data?.message || error.message}`);
+      notifyError(`Error marking invoice as paid: ${error.response?.data?.message || error.message}`);
     },
   });
 
@@ -84,56 +61,41 @@ export const InvoiceTable: React.FC<InvoiceTableProps> = ({ clinicId }) => {
     mutationFn: billingApi.invoices.delete,
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['invoices'] });
-      alert('Invoice deleted successfully!');
+      notifySuccess('Invoice deleted successfully!');
     },
     onError: (error: any) => {
-      alert(`Error deleting invoice: ${error.response?.data?.message || error.message}`);
+      notifyError(`Error deleting invoice: ${error.response?.data?.message || error.message}`);
     },
   });
 
-  const handleSendInvoice = (invoiceId: string) => {
-    if (window.confirm('Send this invoice to the customer?')) {
+  const handleSendInvoice = useCallback((invoiceId: string) => {
+    if (confirmAction('Send this invoice to the customer?')) {
       sendInvoiceMutation.mutate(invoiceId);
     }
-  };
+  }, [sendInvoiceMutation]);
 
-  const handleMarkPaid = (invoiceId: string) => {
-    if (window.confirm('Mark this invoice as paid?')) {
+  const handleMarkPaid = useCallback((invoiceId: string) => {
+    if (confirmAction('Mark this invoice as paid?')) {
       markPaidMutation.mutate(invoiceId);
     }
-  };
+  }, [markPaidMutation]);
 
-  const handleDeleteInvoice = (invoiceId: string) => {
-    if (window.confirm('Are you sure you want to delete this invoice? This action cannot be undone.')) {
+  const handleDeleteInvoice = useCallback((invoiceId: string) => {
+    if (confirmAction('Are you sure you want to delete this invoice? This action cannot be undone.')) {
       deleteInvoiceMutation.mutate(invoiceId);
     }
-  };
+  }, [deleteInvoiceMutation]);
 
-  const getStatusBadgeColor = (status: string) => {
-    const colors: Record<string, string> = {
-      draft: 'bg-gray-100 text-gray-800',
-      sent: 'bg-blue-100 text-blue-800',
-      paid: 'bg-green-100 text-green-800',
-      partially_paid: 'bg-yellow-100 text-yellow-800',
-      overdue: 'bg-red-100 text-red-800',
-      cancelled: 'bg-gray-200 text-gray-600',
-    };
-    return colors[status] || 'bg-gray-100 text-gray-800';
-  };
-
-  const formatCurrency = (amount: number) => {
-    return new Intl.NumberFormat('en-US', {
-      style: 'currency',
-      currency: 'USD',
-    }).format(amount || 0);
-  };
-
-  // Pagination
-  const totalPages = Math.ceil((invoices?.length || 0) / pageSize);
-  const paginatedInvoices = invoices?.slice(
-    (currentPage - 1) * pageSize,
-    currentPage * pageSize
-  ) || [];
+  // Memoize computed values for performance
+  const totalPages = useMemo(() => Math.ceil((invoices?.length || 0) / pageSize), [invoices?.length, pageSize]);
+  
+  const paginatedInvoices = useMemo(() => 
+    invoices?.slice(
+      (currentPage - 1) * pageSize,
+      currentPage * pageSize
+    ) || [],
+    [invoices, currentPage, pageSize]
+  );
 
   if (isLoading) {
     return (
@@ -313,7 +275,7 @@ export const InvoiceTable: React.FC<InvoiceTableProps> = ({ clinicId }) => {
                       ${invoice.balance_amount?.toFixed(2) || '0.00'}
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
-                      <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${getStatusBadgeColor(invoice.status)}`}>
+                      <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${getStatusBadgeColor(invoice.status, 'invoice')}`}>
                         {invoice.status.toUpperCase()}
                       </span>
                     </td>
@@ -468,7 +430,7 @@ export const InvoiceTable: React.FC<InvoiceTableProps> = ({ clinicId }) => {
                   </div>
                   <div>
                     <p className="text-xs font-medium text-gray-500 uppercase">Status</p>
-                    <span className={`mt-1 inline-flex px-2 py-1 text-xs font-semibold rounded-full ${getStatusBadgeColor(selectedInvoice.status)}`}>
+                    <span className={`mt-1 inline-flex px-2 py-1 text-xs font-semibold rounded-full ${getStatusBadgeColor(selectedInvoice.status, 'invoice')}`}>
                       {selectedInvoice.status.toUpperCase()}
                     </span>
                   </div>

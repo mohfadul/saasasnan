@@ -5,10 +5,10 @@ A comprehensive healthcare SaaS platform for dental practice management with mar
 ## 🏗️ Architecture Overview
 
 ### Core Components
-- **Backend**: NestJS + TypeScript + PostgreSQL
+- **Backend**: NestJS + TypeScript + MySQL
 - **Frontend**: React + TypeScript + Tailwind CSS
-- **Mobile**: Android (Kotlin + Jetpack Compose) - *Coming Soon*
-- **AI/ML**: Python + FastAPI + PyTorch - *Coming Soon*
+- **Mobile**: React Native + TypeScript - *In Development*
+- **AI/ML**: Integrated Analytics & Predictions - ✅ *Complete*
 
 ### Key Features
 - ✅ Multi-tenant architecture with data isolation
@@ -17,66 +17,47 @@ A comprehensive healthcare SaaS platform for dental practice management with mar
 - ✅ Patient management with encrypted demographics
 - ✅ Appointment scheduling with conflict detection
 - ✅ Real-time notifications and audit logging
-- 🔄 Marketplace for dental supplies - *In Progress*
-- 🔄 AI-powered treatment recommendations - *Planned*
-- 🔄 Mobile app for patients - *Planned*
+- ✅ Marketplace for dental supplies
+- ✅ AI-powered analytics and predictions
+- ✅ Billing & payment processing with Sudan payment system
+- ✅ Clinical notes & treatment plans
+- ✅ Inventory management
+- 🔄 Mobile app for patients - *In Development*
 
 ## 🚀 Quick Start
 
 ### Prerequisites
 - Node.js 18+
-- PostgreSQL 13+
+- MySQL 8.0+ (via XAMPP or standalone)
 - Redis 6+ (optional, for caching)
 
-### Backend Setup
+### Quick Start
 
-1. **Clone and Install Dependencies**
-```bash
-cd backend
-npm install
-```
+**See [START_HERE.md](START_HERE.md) for detailed setup instructions.**
 
-2. **Environment Configuration**
-```bash
-cp env.example .env
-# Edit .env with your database credentials
-```
-
-3. **Database Setup**
-```bash
-# Create database
-createdb healthcare_platform
-
-# Run the schema setup
-psql healthcare_platform < ../database/schema.sql
-```
-
-4. **Start Development Server**
-```bash
-npm run start:dev
-```
-
-The API will be available at `http://localhost:3001`
-API Documentation: `http://localhost:3001/api/docs`
-
-### Frontend Setup
-
-1. **Install Dependencies**
-```bash
-cd admin-panel
-npm install
-```
-
-2. **Start Development Server**
-```bash
-npm start
-```
+1. **Install XAMPP** (includes MySQL)
+2. **Create Database**: `healthcare_saas`
+3. **Import Schema**: `database/schemas/mysql-schema.sql`
+4. **Configure Backend**: Create `backend/.env` (see START_HERE.md)
+5. **Start Services**:
+   ```bash
+   # Backend
+   cd backend
+   npm install
+   npm run start:dev
+   
+   # Frontend (new terminal)
+   cd admin-panel
+   npm install
+   npm start
+   ```
 
 The admin panel will be available at `http://localhost:3000`
+API Documentation: `http://localhost:3001/api`
 
 ### Default Credentials
-- **Email**: admin@healthcare-platform.com
-- **Password**: Admin123!
+- **Email**: admin@demo.com
+- **Password**: Admin123!@#
 
 ## 📊 Database Schema
 
@@ -215,13 +196,14 @@ docker-compose up -d
 #### Backend (.env)
 ```env
 DB_HOST=localhost
-DB_PORT=5432
-DB_USERNAME=postgres
-DB_PASSWORD=your_password
-DB_NAME=healthcare_platform
-JWT_SECRET=your-super-secret-jwt-key
-ENCRYPTION_KEY=your-encryption-key
-NODE_ENV=production
+DB_PORT=3306
+DB_USERNAME=root
+DB_PASSWORD=
+DB_NAME=healthcare_saas
+JWT_SECRET=my-super-secret-jwt-key-at-least-32-characters-long
+ENCRYPTION_KEY=this-must-be-exactly-32-chars!
+NODE_ENV=development
+PORT=3001
 ```
 
 #### Frontend
