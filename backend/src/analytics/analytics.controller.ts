@@ -15,6 +15,8 @@ import {
 import { Response } from 'express';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard';
 import { TenantGuard } from '../tenants/tenant.guard';
+import { RolesGuard } from '../auth/roles.guard';
+import { Roles } from '../auth/roles.decorator';
 import { AnalyticsService, AnalyticsFilter } from './analytics.service';
 import { DashboardService, CreateDashboardDto, CreateWidgetDto } from './dashboard.service';
 import { ReportsService, CreateReportDto } from './reports.service';
@@ -30,6 +32,8 @@ export class AnalyticsController {
 
   // Dashboard Overview
   @Get('dashboard/overview')
+  @UseGuards(RolesGuard)
+  @Roles('super_admin', 'hospital_admin', 'doctor', 'dentist')
   async getDashboardOverview(
     @Request() req: any,
     @Query('clinic_id') clinicId?: string,
@@ -50,6 +54,8 @@ export class AnalyticsController {
 
   // Appointment Analytics
   @Get('appointments')
+  @UseGuards(RolesGuard)
+  @Roles('super_admin', 'hospital_admin', 'doctor', 'dentist', 'staff')
   async getAppointmentAnalytics(
     @Request() req: any,
     @Query('clinic_id') clinicId?: string,
@@ -77,6 +83,8 @@ export class AnalyticsController {
 
   // Revenue Analytics
   @Get('revenue')
+  @UseGuards(RolesGuard)
+  @Roles('super_admin', 'hospital_admin')
   async getRevenueAnalytics(
     @Request() req: any,
     @Query('clinic_id') clinicId?: string,
@@ -106,6 +114,8 @@ export class AnalyticsController {
 
   // Provider Performance
   @Get('providers/performance')
+  @UseGuards(RolesGuard)
+  @Roles('super_admin', 'hospital_admin')
   async getProviderPerformance(
     @Request() req: any,
     @Query('clinic_id') clinicId?: string,
@@ -124,6 +134,8 @@ export class AnalyticsController {
 
   // Patient Analytics
   @Get('patients')
+  @UseGuards(RolesGuard)
+  @Roles('super_admin', 'hospital_admin', 'staff')
   async getPatientAnalytics(
     @Request() req: any,
     @Query('clinic_id') clinicId?: string,
@@ -142,6 +154,8 @@ export class AnalyticsController {
 
   // Clinical Analytics
   @Get('clinical')
+  @UseGuards(RolesGuard)
+  @Roles('super_admin', 'hospital_admin', 'doctor', 'dentist')
   async getClinicalAnalytics(
     @Request() req: any,
     @Query('clinic_id') clinicId?: string,
@@ -168,6 +182,8 @@ export class AnalyticsController {
 
   // Dashboard Management
   @Post('dashboards')
+  @UseGuards(RolesGuard)
+  @Roles('super_admin', 'hospital_admin')
   async createDashboard(
     @Request() req: any,
     @Body() createDashboardDto: CreateDashboardDto,
@@ -180,6 +196,8 @@ export class AnalyticsController {
   }
 
   @Get('dashboards')
+  @UseGuards(RolesGuard)
+  @Roles('super_admin', 'hospital_admin', 'doctor', 'dentist')
   async getDashboards(
     @Request() req: any,
     @Query('dashboard_type') dashboardType?: string,
@@ -193,6 +211,8 @@ export class AnalyticsController {
   }
 
   @Get('dashboards/:id')
+  @UseGuards(RolesGuard)
+  @Roles('super_admin', 'hospital_admin', 'doctor', 'dentist')
   async getDashboardById(
     @Param('id') id: string,
     @Request() req: any,
@@ -201,6 +221,8 @@ export class AnalyticsController {
   }
 
   @Put('dashboards/:id')
+  @UseGuards(RolesGuard)
+  @Roles('super_admin', 'hospital_admin')
   async updateDashboard(
     @Param('id') id: string,
     @Request() req: any,
@@ -210,6 +232,8 @@ export class AnalyticsController {
   }
 
   @Delete('dashboards/:id')
+  @UseGuards(RolesGuard)
+  @Roles('super_admin', 'hospital_admin')
   async deleteDashboard(
     @Param('id') id: string,
     @Request() req: any,
@@ -219,6 +243,8 @@ export class AnalyticsController {
   }
 
   @Post('dashboards/:id/refresh')
+  @UseGuards(RolesGuard)
+  @Roles('super_admin', 'hospital_admin', 'doctor', 'dentist')
   async refreshDashboard(
     @Param('id') id: string,
     @Request() req: any,
@@ -228,6 +254,8 @@ export class AnalyticsController {
 
   // Widget Management
   @Post('dashboards/:dashboardId/widgets')
+  @UseGuards(RolesGuard)
+  @Roles('super_admin', 'hospital_admin')
   async addWidget(
     @Param('dashboardId') dashboardId: string,
     @Request() req: any,
@@ -237,6 +265,8 @@ export class AnalyticsController {
   }
 
   @Put('widgets/:widgetId')
+  @UseGuards(RolesGuard)
+  @Roles('super_admin', 'hospital_admin')
   async updateWidget(
     @Param('widgetId') widgetId: string,
     @Request() req: any,
@@ -246,6 +276,8 @@ export class AnalyticsController {
   }
 
   @Delete('widgets/:widgetId')
+  @UseGuards(RolesGuard)
+  @Roles('super_admin', 'hospital_admin')
   async deleteWidget(
     @Param('widgetId') widgetId: string,
     @Request() req: any,
@@ -256,6 +288,8 @@ export class AnalyticsController {
 
   // Dashboard Templates
   @Post('dashboards/templates/:templateType')
+  @UseGuards(RolesGuard)
+  @Roles('super_admin', 'hospital_admin')
   async createFromTemplate(
     @Param('templateType') templateType: string,
     @Request() req: any,
@@ -271,6 +305,8 @@ export class AnalyticsController {
 
   // Reports Management
   @Post('reports')
+  @UseGuards(RolesGuard)
+  @Roles('super_admin', 'hospital_admin')
   async createReport(
     @Request() req: any,
     @Body() createReportDto: CreateReportDto,
@@ -283,6 +319,8 @@ export class AnalyticsController {
   }
 
   @Get('reports')
+  @UseGuards(RolesGuard)
+  @Roles('super_admin', 'hospital_admin', 'doctor', 'dentist')
   async getReports(
     @Request() req: any,
     @Query('report_type') reportType?: string,
@@ -296,6 +334,8 @@ export class AnalyticsController {
   }
 
   @Get('reports/:id')
+  @UseGuards(RolesGuard)
+  @Roles('super_admin', 'hospital_admin', 'doctor', 'dentist')
   async getReportById(
     @Param('id') id: string,
     @Request() req: any,
@@ -304,6 +344,8 @@ export class AnalyticsController {
   }
 
   @Delete('reports/:id')
+  @UseGuards(RolesGuard)
+  @Roles('super_admin', 'hospital_admin')
   async deleteReport(
     @Param('id') id: string,
     @Request() req: any,
@@ -313,6 +355,8 @@ export class AnalyticsController {
   }
 
   @Get('reports/:id/download')
+  @UseGuards(RolesGuard)
+  @Roles('super_admin', 'hospital_admin', 'doctor', 'dentist')
   async downloadReport(
     @Param('id') id: string,
     @Request() req: any,
@@ -336,6 +380,8 @@ export class AnalyticsController {
 
   // Real-time Analytics
   @Get('realtime')
+  @UseGuards(RolesGuard)
+  @Roles('super_admin', 'hospital_admin', 'doctor', 'dentist', 'staff')
   async getRealtimeAnalytics(@Request() req: any) {
     const filters: AnalyticsFilter = {
       tenant_id: req.user.tenant_id,
@@ -364,6 +410,8 @@ export class AnalyticsController {
 
   // Custom Analytics Query
   @Post('query')
+  @UseGuards(RolesGuard)
+  @Roles('super_admin', 'hospital_admin')
   async executeCustomQuery(
     @Request() req: any,
     @Body() queryConfig: {

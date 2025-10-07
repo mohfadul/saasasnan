@@ -18,6 +18,8 @@ import { ProductsService, CreateProductDto, UpdateProductDto, ProductFilters } f
 import { OrdersService } from './orders.service';
 import { User } from '../auth/entities/user.entity';
 import { TenantGuard } from '../tenants/tenant.guard';
+import { RolesGuard } from '../auth/roles.guard';
+import { Roles } from '../auth/roles.decorator';
 
 @ApiTags('Marketplace')
 @Controller('marketplace')
@@ -33,6 +35,8 @@ export class MarketplaceController {
 
   // Suppliers endpoints
   @Post('suppliers')
+  @UseGuards(RolesGuard)
+  @Roles('super_admin', 'hospital_admin', 'staff')
   @ApiOperation({ summary: 'Create a new supplier' })
   @ApiResponse({ status: 201, description: 'Supplier created successfully' })
   createSupplier(@Body() createSupplierDto: CreateSupplierDto, @Request() req: { user: User }) {
@@ -40,6 +44,8 @@ export class MarketplaceController {
   }
 
   @Get('suppliers')
+  @UseGuards(RolesGuard)
+  @Roles('super_admin', 'hospital_admin', 'staff', 'supplier')
   @ApiOperation({ summary: 'Get all suppliers' })
   @ApiQuery({ name: 'status', required: false, description: 'Filter by status' })
   @ApiResponse({ status: 200, description: 'Suppliers retrieved successfully' })
@@ -48,6 +54,8 @@ export class MarketplaceController {
   }
 
   @Get('suppliers/:id')
+  @UseGuards(RolesGuard)
+  @Roles('super_admin', 'hospital_admin', 'staff', 'supplier')
   @ApiOperation({ summary: 'Get supplier by ID' })
   @ApiResponse({ status: 200, description: 'Supplier retrieved successfully' })
   getSupplier(@Param('id') id: string, @Request() req: { user: User }) {
@@ -55,6 +63,8 @@ export class MarketplaceController {
   }
 
   @Patch('suppliers/:id')
+  @UseGuards(RolesGuard)
+  @Roles('super_admin', 'hospital_admin', 'supplier')
   @ApiOperation({ summary: 'Update supplier' })
   @ApiResponse({ status: 200, description: 'Supplier updated successfully' })
   updateSupplier(
@@ -66,6 +76,8 @@ export class MarketplaceController {
   }
 
   @Delete('suppliers/:id')
+  @UseGuards(RolesGuard)
+  @Roles('super_admin', 'hospital_admin')
   @ApiOperation({ summary: 'Delete supplier' })
   @ApiResponse({ status: 200, description: 'Supplier deleted successfully' })
   deleteSupplier(@Param('id') id: string, @Request() req: { user: User }) {
@@ -73,6 +85,8 @@ export class MarketplaceController {
   }
 
   @Get('suppliers/stats/overview')
+  @UseGuards(RolesGuard)
+  @Roles('super_admin', 'hospital_admin')
   @ApiOperation({ summary: 'Get supplier statistics' })
   @ApiResponse({ status: 200, description: 'Supplier statistics retrieved successfully' })
   getSupplierStats(@Request() req: { user: User }) {
@@ -81,6 +95,8 @@ export class MarketplaceController {
 
   // Products endpoints
   @Post('products')
+  @UseGuards(RolesGuard)
+  @Roles('super_admin', 'hospital_admin', 'supplier')
   @ApiOperation({ summary: 'Create a new product' })
   @ApiResponse({ status: 201, description: 'Product created successfully' })
   createProduct(@Body() createProductDto: CreateProductDto, @Request() req: { user: User }) {
@@ -88,6 +104,8 @@ export class MarketplaceController {
   }
 
   @Get('products')
+  @UseGuards(RolesGuard)
+  @Roles('super_admin', 'hospital_admin', 'staff', 'supplier')
   @ApiOperation({ summary: 'Get all products' })
   @ApiQuery({ name: 'supplierId', required: false, description: 'Filter by supplier ID' })
   @ApiQuery({ name: 'categoryId', required: false, description: 'Filter by category ID' })
@@ -105,6 +123,8 @@ export class MarketplaceController {
   }
 
   @Get('products/search')
+  @UseGuards(RolesGuard)
+  @Roles('super_admin', 'hospital_admin', 'staff', 'supplier')
   @ApiOperation({ summary: 'Search products' })
   @ApiQuery({ name: 'q', required: true, description: 'Search query' })
   @ApiQuery({ name: 'supplierId', required: false, description: 'Filter by supplier ID' })
@@ -121,6 +141,8 @@ export class MarketplaceController {
   }
 
   @Get('products/featured')
+  @UseGuards(RolesGuard)
+  @Roles('super_admin', 'hospital_admin', 'staff', 'supplier')
   @ApiOperation({ summary: 'Get featured products' })
   @ApiQuery({ name: 'limit', required: false, description: 'Number of products to return' })
   @ApiResponse({ status: 200, description: 'Featured products retrieved successfully' })
@@ -132,13 +154,17 @@ export class MarketplaceController {
   }
 
   @Get('products/:id')
+  @UseGuards(RolesGuard)
+  @Roles('super_admin', 'hospital_admin', 'staff', 'supplier')
   @ApiOperation({ summary: 'Get product by ID' })
   @ApiResponse({ status: 200, description: 'Product retrieved successfully' })
-  getProduct(@Param('id') id: string, @Request() req: { user: User }) {
+  getProduct(@Param('id') id: string, @Request() req: { user: User}) {
     return this.productsService.findOne(id, req.user.tenant_id);
   }
 
   @Patch('products/:id')
+  @UseGuards(RolesGuard)
+  @Roles('super_admin', 'hospital_admin', 'supplier')
   @ApiOperation({ summary: 'Update product' })
   @ApiResponse({ status: 200, description: 'Product updated successfully' })
   updateProduct(
@@ -150,6 +176,8 @@ export class MarketplaceController {
   }
 
   @Delete('products/:id')
+  @UseGuards(RolesGuard)
+  @Roles('super_admin', 'hospital_admin')
   @ApiOperation({ summary: 'Delete product' })
   @ApiResponse({ status: 200, description: 'Product deleted successfully' })
   deleteProduct(@Param('id') id: string, @Request() req: { user: User }) {
@@ -157,6 +185,8 @@ export class MarketplaceController {
   }
 
   @Get('products/stats/overview')
+  @UseGuards(RolesGuard)
+  @Roles('super_admin', 'hospital_admin')
   @ApiOperation({ summary: 'Get product statistics' })
   @ApiResponse({ status: 200, description: 'Product statistics retrieved successfully' })
   getProductStats(@Request() req: { user: User }) {
@@ -165,6 +195,8 @@ export class MarketplaceController {
 
   // Orders endpoints
   @Get('orders')
+  @UseGuards(RolesGuard)
+  @Roles('super_admin', 'hospital_admin', 'staff', 'supplier')
   @ApiOperation({ summary: 'Get all orders' })
   @ApiQuery({ name: 'supplierId', required: false, description: 'Filter by supplier ID' })
   @ApiQuery({ name: 'status', required: false, description: 'Filter by status' })
@@ -178,6 +210,8 @@ export class MarketplaceController {
   }
 
   @Get('orders/:id')
+  @UseGuards(RolesGuard)
+  @Roles('super_admin', 'hospital_admin', 'staff', 'supplier')
   @ApiOperation({ summary: 'Get order by ID' })
   @ApiResponse({ status: 200, description: 'Order retrieved successfully' })
   getOrder(@Param('id') id: string, @Request() req: { user: User }) {
@@ -186,6 +220,8 @@ export class MarketplaceController {
 
   // Marketplace overview
   @Get('overview')
+  @UseGuards(RolesGuard)
+  @Roles('super_admin', 'hospital_admin')
   @ApiOperation({ summary: 'Get marketplace overview statistics' })
   @ApiResponse({ status: 200, description: 'Marketplace overview retrieved successfully' })
   getMarketplaceOverview(@Request() req: { user: User }) {
