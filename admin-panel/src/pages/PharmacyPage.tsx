@@ -8,6 +8,11 @@ import {
   ExclamationTriangleIcon,
 } from '@heroicons/react/24/outline';
 import { pharmacyDashboardApi } from '../services/pharmacy-api';
+import { DrugInventoryTable } from '../components/pharmacy/DrugInventoryTable';
+import { POSWindow } from '../components/pharmacy/POSWindow';
+import { PrescriptionTable } from '../components/pharmacy/PrescriptionTable';
+import { PharmacySupplierTable } from '../components/pharmacy/PharmacySupplierTable';
+import { AlertsDashboard } from '../components/pharmacy/AlertsDashboard';
 
 export const PharmacyPage: React.FC = () => {
   const [activeTab, setActiveTab] = useState<'inventory' | 'pos' | 'prescriptions' | 'suppliers' | 'alerts'>('inventory');
@@ -142,36 +147,11 @@ export const PharmacyPage: React.FC = () => {
 
       {/* Tab Content */}
       <div className="mt-6">
-        {activeTab === 'inventory' && (
-          <div className="bg-white shadow rounded-lg p-6">
-            <h3 className="text-lg font-medium text-gray-900 mb-4">Drug Inventory</h3>
-            <p className="text-gray-500">Drug inventory management interface - Coming soon...</p>
-          </div>
-        )}
-        {activeTab === 'pos' && (
-          <div className="bg-white shadow rounded-lg p-6">
-            <h3 className="text-lg font-medium text-gray-900 mb-4">Point of Sale</h3>
-            <p className="text-gray-500">POS billing interface - Coming soon...</p>
-          </div>
-        )}
-        {activeTab === 'prescriptions' && (
-          <div className="bg-white shadow rounded-lg p-6">
-            <h3 className="text-lg font-medium text-gray-900 mb-4">Doctor Prescriptions</h3>
-            <p className="text-gray-500">Prescription management interface - Coming soon...</p>
-          </div>
-        )}
-        {activeTab === 'suppliers' && (
-          <div className="bg-white shadow rounded-lg p-6">
-            <h3 className="text-lg font-medium text-gray-900 mb-4">Suppliers</h3>
-            <p className="text-gray-500">Supplier management interface - Coming soon...</p>
-          </div>
-        )}
-        {activeTab === 'alerts' && (
-          <div className="bg-white shadow rounded-lg p-6">
-            <h3 className="text-lg font-medium text-gray-900 mb-4">Alerts & Notifications</h3>
-            <p className="text-gray-500">Alerts dashboard - Coming soon...</p>
-          </div>
-        )}
+        {activeTab === 'inventory' && <DrugInventoryTable />}
+        {activeTab === 'pos' && <POSWindow />}
+        {activeTab === 'prescriptions' && <PrescriptionTable />}
+        {activeTab === 'suppliers' && <PharmacySupplierTable />}
+        {activeTab === 'alerts' && <AlertsDashboard />}
       </div>
     </div>
   );
