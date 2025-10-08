@@ -198,7 +198,6 @@ export class ClinicalNotesService {
         }
       }
     }
-    }
 
     if (startDate && endDate) {
       query.andWhere('note.created_at BETWEEN :startDate AND :endDate', {
@@ -431,7 +430,6 @@ export class ClinicalNotesService {
           query.andWhere('plan.provider_id = :userId', { userId: user.id });
         }
       }
-    }
     }
 
     if (priority) {
