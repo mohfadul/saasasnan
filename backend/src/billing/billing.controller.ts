@@ -68,6 +68,7 @@ export class BillingController {
       customerType as any,
       startDate,
       endDate,
+      req.user,
     );
   }
 
@@ -78,7 +79,7 @@ export class BillingController {
   @ApiQuery({ name: 'clinicId', required: false, description: 'Filter by clinic ID' })
   @ApiResponse({ status: 200, description: 'Overdue invoices retrieved successfully' })
   getOverdueInvoices(@Request() req: { user: User }, @Query('clinicId') clinicId?: string) {
-    return this.invoicesService.getOverdueInvoices(req.user.tenant_id, clinicId);
+    return this.invoicesService.getOverdueInvoices(req.user.tenant_id, clinicId, req.user);
   }
 
   @Get('invoices/stats')
@@ -104,7 +105,7 @@ export class BillingController {
   @ApiOperation({ summary: 'Get invoice by ID' })
   @ApiResponse({ status: 200, description: 'Invoice retrieved successfully' })
   getInvoice(@Param('id') id: string, @Request() req: { user: User }) {
-    return this.invoicesService.findOne(id, req.user.tenant_id);
+    return this.invoicesService.findOne(id, req.user.tenant_id, req.user);
   }
 
   @Patch('invoices/:id')

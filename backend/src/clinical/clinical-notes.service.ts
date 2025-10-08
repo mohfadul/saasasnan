@@ -1,4 +1,4 @@
-import { Injectable, NotFoundException, BadRequestException } from '@nestjs/common';
+import { Injectable, NotFoundException, BadRequestException, ForbiddenException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { ClinicalNote, NoteType, NoteStatus } from './entities/clinical-note.entity';
@@ -6,6 +6,7 @@ import { TreatmentPlan, TreatmentPlanStatus } from './entities/treatment-plan.en
 import { TreatmentPlanItem, TreatmentItemStatus } from './entities/treatment-plan-item.entity';
 import { Patient } from '../patients/entities/patient.entity';
 import { Appointment } from '../appointments/entities/appointment.entity';
+import { User } from '../auth/entities/user.entity';
 
 export interface CreateClinicalNoteDto {
   patientId: string;
@@ -159,6 +160,7 @@ export class ClinicalNotesService {
     status?: NoteStatus,
     startDate?: string,
     endDate?: string,
+    user?: User,
   ): Promise<ClinicalNote[]> {
     const query = this.clinicalNotesRepository
       .createQueryBuilder('note')
@@ -184,6 +186,20 @@ export class ClinicalNotesService {
       query.andWhere('note.status = :status', { status });
     }
 
+    // Role-based filtering
+    if (user) {
+      if (user.role === 'patient') {
+        // Patients see only their own clinical notes
+        query.andWhere('note.patient_id IN (SELECT id FROM patients WHERE user_id = :userId)', { userId: user.id });
+      } else if (user.role === 'doctor' || user.role === 'dentist') {
+        // Providers see only notes they created (unless searching by patientId/providerId)
+        if (!patientId && !providerId) {
+          query.andWhere('note.provider_id = :userId', { userId: user.id });
+        }
+      }
+    }
+    }
+
     if (startDate && endDate) {
       query.andWhere('note.created_at BETWEEN :startDate AND :endDate', {
         startDate: new Date(startDate),
@@ -196,7 +212,7 @@ export class ClinicalNotesService {
       .getMany();
   }
 
-  async findOneClinicalNote(id: string, tenantId: string): Promise<ClinicalNote> {
+  async findOneClinicalNote(id: string, tenantId: string, user?: User): Promise<ClinicalNote> {
     const clinicalNote = await this.clinicalNotesRepository.findOne({
       where: { id, tenant_id: tenantId },
       relations: ['patient', 'provider', 'appointment', 'created_by_user', 'amended_by_user', 'treatment_plans'],
@@ -204,6 +220,25 @@ export class ClinicalNotesService {
 
     if (!clinicalNote) {
       throw new NotFoundException(`Clinical note with ID ${id} not found`);
+    }
+
+    // Role-based access control
+    if (user) {
+      if (user.role === 'patient') {
+        // Verify this note belongs to a patient record linked to this user
+        const patient = await this.patientsRepository.findOne({
+          where: { id: clinicalNote.patient_id, user_id: user.id },
+        });
+        if (!patient) {
+          throw new ForbiddenException('Access denied: Not your clinical note');
+        }
+      } else if (user.role === 'doctor' || user.role === 'dentist') {
+        // Providers can only view notes they created (unless admin)
+        const isAdmin = ['super_admin', 'hospital_admin'].includes(user.role);
+        if (!isAdmin && clinicalNote.provider_id !== user.id) {
+          throw new ForbiddenException('Access denied: Not your clinical note');
+        }
+      }
     }
 
     return clinicalNote;
@@ -363,6 +398,7 @@ export class ClinicalNotesService {
     providerId?: string,
     status?: TreatmentPlanStatus,
     priority?: string,
+    user?: User,
   ): Promise<TreatmentPlan[]> {
     const query = this.treatmentPlansRepository
       .createQueryBuilder('plan')
@@ -384,6 +420,20 @@ export class ClinicalNotesService {
       query.andWhere('plan.status = :status', { status });
     }
 
+    // Role-based filtering
+    if (user) {
+      if (user.role === 'patient') {
+        // Patients see only their own treatment plans
+        query.andWhere('plan.patient_id IN (SELECT id FROM patients WHERE user_id = :userId)', { userId: user.id });
+      } else if (user.role === 'doctor' || user.role === 'dentist') {
+        // Providers see only plans they created (unless searching explicitly)
+        if (!patientId && !providerId) {
+          query.andWhere('plan.provider_id = :userId', { userId: user.id });
+        }
+      }
+    }
+    }
+
     if (priority) {
       query.andWhere('plan.priority = :priority', { priority });
     }
@@ -394,7 +444,7 @@ export class ClinicalNotesService {
       .getMany();
   }
 
-  async findOneTreatmentPlan(id: string, tenantId: string): Promise<TreatmentPlan> {
+  async findOneTreatmentPlan(id: string, tenantId: string, user?: User): Promise<TreatmentPlan> {
     const treatmentPlan = await this.treatmentPlansRepository.findOne({
       where: { id, tenant_id: tenantId },
       relations: ['patient', 'provider', 'clinical_note', 'items', 'created_by_user'],
@@ -402,6 +452,25 @@ export class ClinicalNotesService {
 
     if (!treatmentPlan) {
       throw new NotFoundException(`Treatment plan with ID ${id} not found`);
+    }
+
+    // Role-based access control
+    if (user) {
+      if (user.role === 'patient') {
+        // Verify this plan belongs to a patient record linked to this user
+        const patient = await this.patientsRepository.findOne({
+          where: { id: treatmentPlan.patient_id, user_id: user.id },
+        });
+        if (!patient) {
+          throw new ForbiddenException('Access denied: Not your treatment plan');
+        }
+      } else if (user.role === 'doctor' || user.role === 'dentist') {
+        // Providers can only view plans they created (unless admin)
+        const isAdmin = ['super_admin', 'hospital_admin'].includes(user.role);
+        if (!isAdmin && treatmentPlan.provider_id !== user.id) {
+          throw new ForbiddenException('Access denied: Not your treatment plan');
+        }
+      }
     }
 
     return treatmentPlan;

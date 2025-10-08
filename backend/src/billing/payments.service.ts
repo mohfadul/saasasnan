@@ -1,8 +1,10 @@
-import { Injectable, NotFoundException, BadRequestException } from '@nestjs/common';
+import { Injectable, NotFoundException, BadRequestException, ForbiddenException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { Payment, PaymentMethod, PaymentStatus } from './entities/payment.entity';
 import { Invoice, InvoiceStatus } from './entities/invoice.entity';
+import { User } from '../auth/entities/user.entity';
+import { Patient } from '../patients/entities/patient.entity';
 
 export interface CreatePaymentDto {
   invoiceId?: string;
@@ -29,6 +31,8 @@ export class PaymentsService {
     private paymentsRepository: Repository<Payment>,
     @InjectRepository(Invoice)
     private invoicesRepository: Repository<Invoice>,
+    @InjectRepository(Patient)
+    private patientsRepository: Repository<Patient>,
   ) {}
 
   async create(createPaymentDto: CreatePaymentDto, tenantId: string, user: any): Promise<Payment> {
@@ -108,6 +112,7 @@ export class PaymentsService {
     status?: PaymentStatus,
     startDate?: string,
     endDate?: string,
+    user?: User,
   ): Promise<Payment[]> {
     const query = this.paymentsRepository
       .createQueryBuilder('payment')
@@ -134,12 +139,20 @@ export class PaymentsService {
       });
     }
 
+    // Role-based filtering: Patients see only payments for their invoices
+    if (user && user.role === 'patient') {
+      query.andWhere(
+        'payment.invoice_id IN (SELECT id FROM invoices WHERE customer_id IN (SELECT id FROM patients WHERE user_id = :userId))',
+        { userId: user.id }
+      );
+    }
+
     return await query
       .orderBy('payment.payment_date', 'DESC')
       .getMany();
   }
 
-  async findOne(id: string, tenantId: string): Promise<Payment> {
+  async findOne(id: string, tenantId: string, user?: User): Promise<Payment> {
     const payment = await this.paymentsRepository.findOne({
       where: { id, tenant_id: tenantId },
       relations: ['invoice', 'created_by_user'],
@@ -147,6 +160,17 @@ export class PaymentsService {
 
     if (!payment) {
       throw new NotFoundException(`Payment with ID ${id} not found`);
+    }
+
+    // Role-based access control: Patients can only view payments for their invoices
+    if (user && user.role === 'patient' && payment.invoice) {
+      const patient = await this.patientsRepository.findOne({
+        where: { id: payment.invoice.customer_id, user_id: user.id },
+      });
+      
+      if (!patient) {
+        throw new ForbiddenException('Access denied: Not your payment');
+      }
     }
 
     return payment;

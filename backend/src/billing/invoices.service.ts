@@ -1,10 +1,11 @@
-import { Injectable, NotFoundException, BadRequestException } from '@nestjs/common';
+import { Injectable, NotFoundException, BadRequestException, ForbiddenException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository, Between } from 'typeorm';
 import { Invoice, InvoiceStatus, CustomerType } from './entities/invoice.entity';
 import { InvoiceItem, ItemType } from './entities/invoice-item.entity';
 import { Patient } from '../patients/entities/patient.entity';
 import { InsuranceProvider } from './entities/insurance-provider.entity';
+import { User } from '../auth/entities/user.entity';
 
 export interface CreateInvoiceDto {
   clinicId: string;
@@ -139,6 +140,7 @@ export class InvoicesService {
     customerType?: CustomerType,
     startDate?: string,
     endDate?: string,
+    user?: User,
   ): Promise<Invoice[]> {
     const query = this.invoicesRepository
       .createQueryBuilder('invoice')
@@ -165,12 +167,18 @@ export class InvoicesService {
       });
     }
 
+    // Role-based filtering: Patients see only their own invoices
+    if (user && user.role === 'patient') {
+      query.andWhere('invoice.customer_type = :patientType', { patientType: CustomerType.PATIENT });
+      query.andWhere('invoice.customer_id IN (SELECT id FROM patients WHERE user_id = :userId)', { userId: user.id });
+    }
+
     return await query
       .orderBy('invoice.invoice_date', 'DESC')
       .getMany();
   }
 
-  async findOne(id: string, tenantId: string): Promise<Invoice> {
+  async findOne(id: string, tenantId: string, user?: User): Promise<Invoice> {
     const invoice = await this.invoicesRepository.findOne({
       where: { id, tenant_id: tenantId },
       relations: ['items', 'payments', 'created_by_user'],
@@ -178,6 +186,22 @@ export class InvoicesService {
 
     if (!invoice) {
       throw new NotFoundException(`Invoice with ID ${id} not found`);
+    }
+
+    // Role-based access control: Patients can only view their own invoices
+    if (user && user.role === 'patient') {
+      if (invoice.customer_type !== CustomerType.PATIENT || !invoice.customer_id) {
+        throw new ForbiddenException('Access denied: Not your invoice');
+      }
+      
+      // Verify this invoice belongs to a patient record linked to this user
+      const patient = await this.patientsRepository.findOne({
+        where: { id: invoice.customer_id, user_id: user.id },
+      });
+      
+      if (!patient) {
+        throw new ForbiddenException('Access denied: Not your invoice');
+      }
     }
 
     return invoice;
@@ -230,7 +254,7 @@ export class InvoicesService {
     return await this.invoicesRepository.save(invoice);
   }
 
-  async getOverdueInvoices(tenantId: string, clinicId?: string): Promise<Invoice[]> {
+  async getOverdueInvoices(tenantId: string, clinicId?: string, user?: User): Promise<Invoice[]> {
     const query = this.invoicesRepository
       .createQueryBuilder('invoice')
       .leftJoinAndSelect('invoice.items', 'items')
@@ -242,6 +266,12 @@ export class InvoicesService {
 
     if (clinicId) {
       query.andWhere('invoice.clinic_id = :clinicId', { clinicId });
+    }
+
+    // Role-based filtering: Patients see only their overdue invoices
+    if (user && user.role === 'patient') {
+      query.andWhere('invoice.customer_type = :patientType', { patientType: CustomerType.PATIENT });
+      query.andWhere('invoice.customer_id IN (SELECT id FROM patients WHERE user_id = :userId)', { userId: user.id });
     }
 
     return await query
